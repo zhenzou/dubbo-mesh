@@ -1,21 +1,27 @@
 package dubbo
 
 import (
-	"bytes"
-
 	"dubbo-mesh/json"
-	"dubbo-mesh/log"
 )
 
+type Process func(request *Request) (resp *Response, err error)
+
 func NewClient(addr string) *Client {
-	return &Client{NewPool(addr)}
+	client := &Client{pool: NewPool(addr)}
+	client.init()
+	return client
 }
 
 type Client struct {
-	pool *Pool
+	pool    *Pool
+	process Process
 }
 
-func (this *Client) Invoke(interfaceName, method, paramType, param string) (resp []byte, err error) {
+func (this *Client) init() {
+	this.process = this.defaultProcess
+}
+
+func (this *Client) Invoke(interfaceName, method, paramType, param string) (resp *Response, err error) {
 	data, _ := json.Marshal(param)
 
 	invocation := Invocation{
@@ -26,31 +32,25 @@ func (this *Client) Invoke(interfaceName, method, paramType, param string) (resp
 	}
 
 	req := NewRequest("2.0.0", interfaceName, method, paramType, &invocation)
-	conn := this.pool.Get()
-	defer this.pool.Put(conn)
-	data = Encode(req)
-	_, err = conn.Write(data)
+
+	return this.process(req)
+}
+
+func (this *Client) getConn() *Conn {
+	return this.pool.Get()
+}
+
+func (this *Client) closeConn(conn *Conn) {
+	this.pool.Put(conn)
+}
+
+// TODO Retry
+func (this *Client) defaultProcess(request *Request) (resp *Response, err error) {
+	conn := this.getConn()
+	defer this.closeConn(conn)
+	err = conn.WriteRequest(request)
 	if err != nil {
-		log.Warn(err.Error())
+		return
 	}
-	header := make([]byte, HeaderLength)
-	n, err := conn.Read(header)
-	if err != nil {
-		panic(err)
-	}
-	log.Debug("read:", n)
-	id := Bytes2Int64(header[4:12])
-	log.Debug("id:", id)
-	dataLen := Bytes2Int(header[12:])
-	log.Debug("len:", dataLen)
-	data = make([]byte, dataLen)
-	n, err = conn.Read(data)
-	if err != nil {
-		panic(err)
-	}
-	log.Debug("read:", n)
-	log.Debug(string(data))
-	split := bytes.Split(data, []byte("\n"))
-	resp = split[1]
-	return
+	return conn.ReadResponse()
 }

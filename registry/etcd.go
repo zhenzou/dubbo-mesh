@@ -3,13 +3,13 @@ package registry
 import (
 	"fmt"
 	"context"
+	"strings"
+	"strconv"
 
 	etcd "github.com/coreos/etcd/clientv3"
 
 	"dubbo-mesh/util"
 	"dubbo-mesh/log"
-	"strings"
-	"strconv"
 )
 
 func NewEtcd(client *etcd.Client) Registry {
@@ -70,7 +70,7 @@ func (this *Etcd) Find(serviceName string) (endpoints []*EndPoint, err error) {
 	for _, kv := range resp.Kvs {
 		key := string(kv.Key)
 		addr := strings.TrimPrefix(key, prefix)
-		log.Info("get service :", key)
+		log.Debug("get service :", key)
 		split := strings.Split(addr, ":")
 		if len(split) != 2 {
 			log.Warn("get wrong service ", key)

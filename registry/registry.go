@@ -1,15 +1,24 @@
 package registry
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const (
 	RootPath = "dubbo-mesh"
 )
 
+type Status struct {
+	Alive  int
+	Core   int
+	Memory int
+	Rate   int
+}
+
 type EndPoint struct {
 	Host  string
 	Port  int
-	Value string
+	Value *Status
 }
 
 func (this *EndPoint) String() string {

@@ -1,6 +1,8 @@
 package dubbo
 
-import "sync/atomic"
+import (
+	"sync/atomic"
+)
 
 var (
 	nextId int64

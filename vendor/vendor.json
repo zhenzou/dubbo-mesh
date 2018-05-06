@@ -77,30 +77,6 @@
 			"revisionTime": "2018-05-05T04:03:17Z"
 		},
 		{
-			"checksumSHA1": "QeKwBtN2df+j+4stw3bQJ6yO4EY=",
-			"path": "github.com/gin-contrib/sse",
-			"revision": "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae",
-			"revisionTime": "2017-01-09T09:34:21Z"
-		},
-		{
-			"checksumSHA1": "JFakGHc2NzjsLA39/+SuilyAxPs=",
-			"path": "github.com/gin-gonic/gin",
-			"revision": "34e972e15545847386a54f9268141cd3a789170a",
-			"revisionTime": "2017-07-06T12:59:27Z"
-		},
-		{
-			"checksumSHA1": "YVt5lqmGq95m5tFdiz5pr2BF1Jo=",
-			"path": "github.com/gin-gonic/gin/binding",
-			"revision": "34e972e15545847386a54f9268141cd3a789170a",
-			"revisionTime": "2017-07-06T12:59:27Z"
-		},
-		{
-			"checksumSHA1": "gcmFuV/flgKQthgQPZtpH1+pth0=",
-			"path": "github.com/gin-gonic/gin/render",
-			"revision": "34e972e15545847386a54f9268141cd3a789170a",
-			"revisionTime": "2017-07-06T12:59:27Z"
-		},
-		{
 			"checksumSHA1": "+wLB7aMn3pHO6JmizmYJDn4dn2Y=",
 			"origin": "github.com/coreos/etcd/vendor/github.com/gogo/protobuf/gogoproto",
 			"path": "github.com/gogo/protobuf/gogoproto",
@@ -158,12 +134,6 @@
 			"revisionTime": "2018-04-24T00:46:23Z"
 		},
 		{
-			"checksumSHA1": "U6lX43KDDlNOn+Z0Yyww+ZzHfFo=",
-			"path": "github.com/mattn/go-isatty",
-			"revision": "fc9e8d8ef48496124e79ae0df75490096eccf6fe",
-			"revisionTime": "2017-03-22T23:44:13Z"
-		},
-		{
 			"checksumSHA1": "ZTcgWKWHsrX0RXYVXn5Xeb8Q0go=",
 			"path": "github.com/modern-go/concurrent",
 			"revision": "bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94",
@@ -174,18 +144,6 @@
 			"path": "github.com/modern-go/reflect2",
 			"revision": "05fbef0ca5da472bbf96c9322b84a53edc03c9fd",
 			"revisionTime": "2018-03-20T13:32:07Z"
-		},
-		{
-			"checksumSHA1": "BSKQ8okupcPpW2+1gOw1a/OlZqc=",
-			"path": "github.com/rcrowley/go-metrics",
-			"revision": "d932a24a8ccb8fcadc993e5c6c58f93dac168294",
-			"revisionTime": "2018-04-06T23:47:16Z"
-		},
-		{
-			"checksumSHA1": "9Zw986fuQM/hCoVd8vmHoSM+8sU=",
-			"path": "github.com/ugorji/go/codec",
-			"revision": "5efa3251c7f7d05e5d9704a69a984ec9f1386a40",
-			"revisionTime": "2017-06-20T10:48:52Z"
 		},
 		{
 			"checksumSHA1": "HedK9m8E8iyib4bIBtIX7xprOgo=",
@@ -282,12 +240,6 @@
 			"path": "golang.org/x/net/trace",
 			"revision": "5f9ae10d9af5b1c89ae6904293b14b064d4ada23",
 			"revisionTime": "2018-04-20T07:04:21Z"
-		},
-		{
-			"checksumSHA1": "B2t4JjkjyoUINOnKXviNypvgWpo=",
-			"path": "golang.org/x/sys/unix",
-			"revision": "328643532ee3c60c099171d4ce2cad0ca0354ca9",
-			"revisionTime": "2017-11-16T10:19:09Z"
 		},
 		{
 			"checksumSHA1": "CbpjEkkOeh0fdM/V8xKDdI0AA88=",
@@ -469,18 +421,6 @@
 			"path": "google.golang.org/grpc/transport",
 			"revision": "4172bfc25e1c7dc4265a50b3ba73e87401fb75c1",
 			"revisionTime": "2018-04-20T00:17:21Z"
-		},
-		{
-			"checksumSHA1": "39V1idWER42Lmcmg2Uy40wMzOlo=",
-			"path": "gopkg.in/go-playground/validator.v8",
-			"revision": "5f57d2222ad794d0dffb07e664ea05e2ee07d60c",
-			"revisionTime": "2016-07-18T13:41:25Z"
-		},
-		{
-			"checksumSHA1": "RDJpJQwkF012L6m/2BJizyOksNw=",
-			"path": "gopkg.in/yaml.v2",
-			"revision": "eb3733d160e74a9c7e442f435eb3bea458e1d19f",
-			"revisionTime": "2017-08-12T16:00:11Z"
 		}
 	],
 	"rootPath": "dubbo-mesh"
