@@ -30,10 +30,12 @@ func (this *Conn) WriteRequest(req *Request) (err error) {
 	EncodeInt64(header, req.Id, 4)
 	data := EncodeInvocation(req.Data.(*Invocation))
 	EncodeInt(header, len(data), 12)
-	buf := bytes.NewBuffer(make([]byte, 0, HeaderLength+len(data)))
-	buf.Write(header)
-	buf.Write(data)
-	_, err = this.Write(buf.Bytes())
+
+	payload := make([]byte, HeaderLength+len(data))
+
+	copy(payload, header)
+	copy(payload[HeaderLength:], data)
+	_, err = this.Write(payload)
 	if err != nil {
 		return
 	}
@@ -59,7 +61,6 @@ func (this *Conn) ReadResponse() (resp *Response, err error) {
 	if err != nil {
 		return
 	}
-
 	split := bytes.Split(data, ParamSeparator)
 	log.Debug("split:", util.ToJsonStr(split))
 	data = bytes.Join(split[1:len(split)-1], ParamSeparator)
@@ -69,22 +70,42 @@ func (this *Conn) ReadResponse() (resp *Response, err error) {
 
 func NewPool(dubboAddr string) *Pool {
 	log.Debug("dubboAddr:", dubboAddr)
-	return &Pool{dubboAddr}
+	pool := &Pool{addr: dubboAddr, ch: make(chan *Conn, 256)}
+	return pool
 }
 
 type Pool struct {
 	addr string
+	ch   chan *Conn
 }
 
-func (this *Pool) Get() *Conn {
+func (this *Pool) new() *Conn {
 	conn, err := net.Dial("tcp", this.addr)
 	if err != nil {
 		panic(err)
 	}
 	return &Conn{Conn: conn}
 }
+func (this *Pool) Get() *Conn {
+	select {
+	case conn := <-this.ch:
+		return conn
+	default:
+		return this.new()
+	}
+}
 
 // TODO POOl
 func (this *Pool) Put(conn *Conn) {
-	conn.Close()
+	select {
+	case this.ch <- conn:
+	default:
+		conn.Close()
+	}
+}
+
+func (this *Pool) Shutdown() {
+	for conn := range this.ch {
+		conn.Close()
+	}
 }

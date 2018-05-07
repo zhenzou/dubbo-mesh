@@ -2,10 +2,10 @@ package dubbo
 
 import (
 	"bytes"
+	"encoding/binary"
 
 	"dubbo-mesh/json"
 	"dubbo-mesh/log"
-	"encoding/binary"
 )
 
 func EncodeInt16(encode []byte, i int16, offset ...int) []byte {

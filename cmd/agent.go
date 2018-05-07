@@ -6,6 +6,7 @@ import (
 	"dubbo-mesh/dubbo"
 	"dubbo-mesh/util"
 	"dubbo-mesh/derror"
+	"dubbo-mesh/log"
 )
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 
 	go func() {
 		if err := server.Run(cfg.ServerPort); err != http.ErrServerClosed {
-			panic(err)
+			log.Panic(err)
 		}
 	}()
 

@@ -43,7 +43,9 @@ func (this *Server) Shutdown() error {
 	log.Info("server start to shutdown")
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	return this.Server.Shutdown(ctx)
+	err := this.Server.Shutdown(ctx)
+	client.Shutdown()
+	return err
 }
 
 func invoke(w http.ResponseWriter, req *http.Request) {

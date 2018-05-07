@@ -25,7 +25,6 @@ func NewHeader() interface{} {
 	header[0] = Magic[0]
 	header[1] = Magic[1]
 	header[2 ] = FlagRequest | 6
-
 	return Header(header)
 }
 
@@ -43,14 +42,4 @@ func (this Header) RequestId() int64 {
 
 func (this Header) Bytes() []byte {
 	return []byte(this)
-}
-
-func (this Header) Set(req *Request) {
-	if req.TwoWay {
-		this[2] |= FlagTwoWay
-	}
-	if req.Event {
-		this[2] |= FlagEvent
-	}
-	EncodeInt64(this, req.Id, 4)
 }

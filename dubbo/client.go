@@ -36,6 +36,10 @@ func (this *Client) Invoke(interfaceName, method, paramType, param string) (resp
 	return this.process(req)
 }
 
+func (this *Client) Shutdown() {
+	this.pool.Shutdown()
+}
+
 func (this *Client) getConn() *Conn {
 	return this.pool.Get()
 }
