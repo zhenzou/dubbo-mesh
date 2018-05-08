@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"dubbo-mesh/app"
+	"dubbo-mesh/cmd"
 	"dubbo-mesh/log"
 	"dubbo-mesh/sidecar"
 )
@@ -16,13 +16,13 @@ func main() {
 		server *sidecar.Provider
 	)
 
-	app.Run(
+	cmd.Run(
 		func() error {
 			cfg = &sidecar.Config{
-				DubboAddr:  fmt.Sprintf("127.0.0.1:%d", app.DubboPort),
-				ServerPort: app.Port,
-				Etcd:       app.Etcd,
-				Service:    app.Service,
+				DubboAddr:  fmt.Sprintf("127.0.0.1:%d", cmd.DubboPort),
+				ServerPort: cmd.Port,
+				Etcd:       cmd.Etcd,
+				Service:    cmd.Service,
 			}
 			return nil
 		},
