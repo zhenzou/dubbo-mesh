@@ -12,6 +12,18 @@ import (
 	"dubbo-mesh/log"
 )
 
+func NewEtcdFromAddr(addr string) Registry {
+	endpoints := strings.Split(addr, ",")
+	cfg := etcd.Config{
+		Endpoints: endpoints,
+	}
+	client, err := etcd.New(cfg)
+	if err != nil {
+		panic(err)
+	}
+	return NewEtcd(client)
+}
+
 func NewEtcd(client *etcd.Client) Registry {
 	resp, err := client.Grant(context.Background(), 30)
 	if err != nil {

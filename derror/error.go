@@ -11,3 +11,9 @@ func Warn(err error) {
 		log.Warn(err.Error())
 	}
 }
+
+func Panic(err error) {
+	if err != nil {
+		log.Panic(err.Error())
+	}
+}

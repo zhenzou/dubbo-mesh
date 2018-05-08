@@ -3,19 +3,27 @@ package app
 import (
 	"flag"
 	"runtime"
-	"strings"
 
 	"dubbo-mesh/log"
 	"dubbo-mesh/util"
 )
 
 var (
-	CpuNum int
-	Name   string
+	CpuNum    int
+	Port      int
+	DubboPort int
+	Etcd      string
+	Name      string
+	Service   string
 )
 
 func init() {
 	flag.IntVar(&CpuNum, "cpunum", runtime.NumCPU(), "指定cpu数量，默认CPU核数")
+	flag.IntVar(&Port, "p", 20000, "监听端口，默认是20000,consumer端口")
+	flag.IntVar(&DubboPort, "dp", 20880, "dubbo服务端口")
+	flag.StringVar(&Etcd, "e", "http://127.0.0.1:2379", "Etcd 服务地址")
+	flag.StringVar(&Name, "n", "consumer", "服务名称")
+	flag.StringVar(&Service, "s", "com.alibaba.dubbo.performance.demo.provider.IHelloService", "dubbo服务全限定名")
 }
 
 func ParseFlag() {
@@ -25,65 +33,28 @@ func ParseFlag() {
 	runtime.GOMAXPROCS(CpuNum)
 }
 
-func Run(appName string, initFunc, jobFunc, cleanupFunc func() error) {
+func Run(initFunc, jobFunc, cleanupFunc func() error) {
 	ParseFlag()
-	Name = appName
-	log.Infof("running %s in %s mode", Name, Mode.String())
 
-	log.Infof("初始化 [%s]", appName)
+	log.Infof("初始化 [%s]", Name)
 	if err := initFunc(); err != nil {
-		log.Infof("初始化 [%s] 失败：[%s]", appName, err)
+		log.Infof("初始化 [%s] 失败：[%s]", Name, err)
 		panic(err)
 	}
-	log.Infof("初始化 [%s] 完成", appName)
+	log.Infof("初始化 [%s] 完成", Name)
 	go func() {
 		if err := jobFunc(); err != nil {
-			log.Infof("[%s] 运行出错：[%v]", appName, err)
+			log.Infof("[%s] 运行出错：[%v]", Name, err)
 			panic(err)
 		}
 	}()
 
 	util.WaitForExitSign()
-	log.Infof("[%s] 监听到退出信息，开始清理", appName)
+	log.Infof("[%s] 监听到退出信息，开始清理", Name)
 	if err := cleanupFunc(); err != nil {
-		log.Infof("[%s] 清理失败：[%v]", appName, err)
+		log.Infof("[%s] 清理失败：[%v]", Name, err)
 		panic(err)
 	}
-	log.Infof("[%s] 清理完成，成功退出", appName)
+	log.Infof("[%s] 清理完成，成功退出", Name)
 	log.Sync()
-}
-
-func Funcs(funcs ...func() error) func() error {
-	return func() error {
-		for _, fun := range funcs {
-			if err := fun(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-}
-
-func LogWrapper(msg string, fun func() error) func() error {
-	return func() error {
-		log.Info(msg + " 开始")
-		if err := fun(); err != nil {
-			log.Infof("%s 失败:%v", msg, err)
-			return err
-		}
-		log.Info(msg + " 完成")
-		return nil
-	}
-}
-
-type RunningMode string
-
-const (
-	DevMode  RunningMode = "dev"
-	ProdMode RunningMode = "prod"
-	TestMode RunningMode = "test"
-)
-
-func (this RunningMode) String() string {
-	return strings.ToLower(string(this))
 }
