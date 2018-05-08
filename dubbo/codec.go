@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 
 	"dubbo-mesh/json"
-	"dubbo-mesh/log"
 )
 
 func EncodeInt16(encode []byte, i int16, offset ...int) []byte {
@@ -63,6 +62,5 @@ func EncodeInvocation(inv *Invocation) []byte {
 	paramType, _ := json.Marshal(inv.ParamType)
 	attach, _ := json.Marshal(inv.Attach)
 	data = bytes.Join([][]byte{dubbo, path, version, method, paramType, inv.Args, attach}, ParamSeparator)
-	log.Debug("Invocation:", string(data))
 	return data
 }

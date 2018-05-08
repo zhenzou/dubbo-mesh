@@ -3,10 +3,8 @@ package dubbo
 import (
 	"net"
 	"errors"
-	"bytes"
 
 	"dubbo-mesh/log"
-	"dubbo-mesh/util"
 )
 
 var (
@@ -49,22 +47,18 @@ func (this *Conn) ReadResponse() (resp *Response, err error) {
 		return
 	}
 	header := headerPool.Get().(Header)
-	var n int
-	n, err = this.Read(header)
+	var _ int
+	_, err = this.Read(header)
 	if err != nil {
 		return
 	}
-	log.Debug("read:", n)
 	length := header.DataLen()
 	data := make([]byte, length)
-	n, err = this.Read(data)
+	_, err = this.Read(data)
 	if err != nil {
 		return
 	}
-	split := bytes.Split(data, ParamSeparator)
-	log.Debug("split:", util.ToJsonStr(split))
-	data = bytes.Join(split[1:len(split)-1], ParamSeparator)
-	resp = NewResponse(header.RequestId(), data)
+	resp = NewResponse(header.Status(), header.RequestId(), data)
 	return
 }
 
@@ -84,6 +78,8 @@ func (this *Pool) new() *Conn {
 	if err != nil {
 		panic(err)
 	}
+	log.Info("new:", conn.LocalAddr())
+
 	return &Conn{Conn: conn}
 }
 func (this *Pool) Get() *Conn {
@@ -100,6 +96,7 @@ func (this *Pool) Put(conn *Conn) {
 	select {
 	case this.ch <- conn:
 	default:
+		log.Info("close:", conn.LocalAddr())
 		conn.Close()
 	}
 }

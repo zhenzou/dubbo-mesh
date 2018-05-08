@@ -9,6 +9,17 @@ const (
 	FlagRequest  byte = 0x80
 	FlagTwoWay   byte = 0x40
 	FlagEvent    byte = 0x20
+
+	StatusOk                             = 20
+	StatusClientTimeOut                  = 30
+	StatusServerTimeout                  = 31
+	StatusBadReq                         = 40
+	StatusBadResp                        = 50
+	StatusServiceNotFound                = 60
+	StatusServiceError                   = 70
+	StatusServerError                    = 80
+	StatusClientError                    = 90
+	StatusServerThreadPoolExhaustedError = 100
 )
 
 var (
@@ -38,6 +49,11 @@ func (this Header) DataLen() int {
 // 通过Header获取payload的长度
 func (this Header) RequestId() int64 {
 	return Bytes2Int64(this[4:12])
+}
+
+// 返回值状态
+func (this Header) Status() int {
+	return int(this[3])
 }
 
 func (this Header) Bytes() []byte {

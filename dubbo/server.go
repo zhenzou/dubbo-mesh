@@ -53,12 +53,14 @@ func invoke(w http.ResponseWriter, req *http.Request) {
 	method := req.FormValue("method")
 	paramType := req.FormValue("parameterTypesString")
 	param := req.FormValue("parameter")
-	log.Debugf("%s/%s/%s/%s", interfaceName, method, paramType, param)
 	resp, err := client.Invoke(interfaceName, method, paramType, param)
 	if err != nil {
 		w.WriteHeader(500)
+	} else if resp.Error() != nil {
+		log.Warn(resp.Error().Error())
+		w.WriteHeader(http.StatusInternalServerError)
 	} else {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.Write(resp.Payload)
+		w.Write(resp.Body())
 	}
 }

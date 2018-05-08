@@ -2,6 +2,8 @@ package dubbo
 
 import (
 	"sync/atomic"
+	"errors"
+	"bytes"
 )
 
 var (
@@ -41,11 +43,32 @@ func NewRequest(version, interfaceName, method, paramType string, data interface
 	}
 }
 
-func NewResponse(id int64, data []byte) *Response {
-	return &Response{id, data}
+func NewResponse(status int, id int64, data []byte) *Response {
+	return &Response{status, id, data, ""}
 }
 
 type Response struct {
-	ReqId   int64  // requestId
-	Payload []byte // 数据
+	Status   int
+	ReqId    int64  // requestId
+	Payload  []byte // 数据
+	ErrorMsg string
+}
+
+func (this *Response) Error() error {
+	if this.Status == StatusOk {
+		return nil
+	}
+	return errors.New(string(this.Body()))
+}
+
+// 返回body，错误消息，或者返回值
+// 为了比赛的 case 优化
+func (this *Response) Body() []byte {
+	split := bytes.Split(this.Payload, ParamSeparator)
+
+	if this.Status == StatusOk {
+		//data = bytes.Join(split[1:len(split)-1], ParamSeparator)
+		return split[1]
+	}
+	return split[0]
 }
