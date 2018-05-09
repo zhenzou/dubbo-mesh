@@ -1,7 +1,6 @@
 #!/bin/sh
 
 PROJ_ROOT=`dirname $0`
-echo "${PROJ_ROOT}"
 function valid(){
 	if [ $2 = "all" ];then
 		echo 1

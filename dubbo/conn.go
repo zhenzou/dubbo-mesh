@@ -5,10 +5,14 @@ import (
 	"errors"
 
 	"dubbo-mesh/log"
+	"dubbo-mesh/derror"
+	"context"
+	"time"
 )
 
 var (
 	ReadBeforeRequestError = errors.New("")
+	PoolShutdownError      = errors.New("pool shutdown")
 	ParamSeparator         = []byte("\n")
 )
 
@@ -41,6 +45,11 @@ func (this *Conn) WriteRequest(req *Request) (err error) {
 	return
 }
 
+func (this *Conn) Close() (err error) {
+	log.Info("close ", this.LocalAddr())
+	return this.Conn.Close()
+}
+
 func (this *Conn) ReadResponse() (resp *Response, err error) {
 	if !this.send {
 		err = ReadBeforeRequestError
@@ -62,9 +71,9 @@ func (this *Conn) ReadResponse() (resp *Response, err error) {
 	return
 }
 
-func NewPool(dubboAddr string) *Pool {
-	log.Debug("dubboAddr:", dubboAddr)
-	pool := &Pool{addr: dubboAddr, ch: make(chan *Conn, 256)}
+func NewPool(max int, dubboAddr string) *Pool {
+	log.Debug("dubboAddr ", dubboAddr)
+	pool := &Pool{addr: dubboAddr, ch: make(chan *Conn, max)}
 	return pool
 }
 
@@ -73,19 +82,22 @@ type Pool struct {
 	ch   chan *Conn
 }
 
-func (this *Pool) new() *Conn {
+func (this *Pool) new() (*Conn, error) {
 	conn, err := net.Dial("tcp", this.addr)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	log.Info("new:", conn.LocalAddr())
+	log.Info("new ", conn.LocalAddr())
 
-	return &Conn{Conn: conn}
+	return &Conn{Conn: conn}, nil
 }
-func (this *Pool) Get() *Conn {
+func (this *Pool) Get() (*Conn, error) {
 	select {
-	case conn := <-this.ch:
-		return conn
+	case conn, more := <-this.ch:
+		if !more {
+			return nil, PoolShutdownError
+		}
+		return conn, nil
 	default:
 		return this.new()
 	}
@@ -101,8 +113,20 @@ func (this *Pool) Put(conn *Conn) {
 	}
 }
 
-func (this *Pool) Shutdown() {
-	for conn := range this.ch {
-		conn.Close()
+func (this *Pool) Shutdown() error {
+	ctx, _ := context.WithTimeout(context.Background(), 1*time.Minute)
+	close(this.ch)
+	done := make(chan struct{})
+	go func() {
+		for conn := range this.ch {
+			derror.Warn(conn.Close())
+		}
+		done <- struct{}{}
+	}()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-done:
+		return nil
 	}
 }

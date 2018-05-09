@@ -7,7 +7,7 @@ import (
 type Process func(request *Request) (resp *Response, err error)
 
 func NewClient(addr string) *Client {
-	client := &Client{pool: NewPool(addr)}
+	client := &Client{pool: NewPool(200, addr)}
 	client.init()
 	return client
 }
@@ -41,7 +41,9 @@ func (this *Client) Shutdown() {
 }
 
 func (this *Client) getConn() *Conn {
-	return this.pool.Get()
+	// 暂时忽略错误
+	conn, _ := this.pool.Get()
+	return conn
 }
 
 func (this *Client) closeConn(conn *Conn) {

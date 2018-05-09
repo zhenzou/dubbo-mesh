@@ -39,13 +39,13 @@ func Run(initFunc, jobFunc, cleanupFunc func() error) {
 	log.Infof("初始化 [%s]", Name)
 	if err := initFunc(); err != nil {
 		log.Infof("初始化 [%s] 失败：[%s]", Name, err)
-		panic(err)
+		log.Panic(err)
 	}
 	log.Infof("初始化 [%s] 完成", Name)
 	go func() {
 		if err := jobFunc(); err != nil {
 			log.Infof("[%s] 运行出错：[%v]", Name, err)
-			panic(err)
+			log.Panic(err)
 		}
 	}()
 
@@ -53,7 +53,7 @@ func Run(initFunc, jobFunc, cleanupFunc func() error) {
 	log.Infof("[%s] 监听到退出信息，开始清理", Name)
 	if err := cleanupFunc(); err != nil {
 		log.Infof("[%s] 清理失败：[%v]", Name, err)
-		panic(err)
+		log.Panic(err)
 	}
 	log.Infof("[%s] 清理完成，成功退出", Name)
 	log.Sync()
