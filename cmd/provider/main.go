@@ -27,7 +27,7 @@ func main() {
 			return nil
 		},
 		func() error {
-			server = sidecar.NewProvider(cfg)
+			server = sidecar.NewMockProvider(cfg)
 			if err := server.Run(); err != http.ErrServerClosed {
 				log.Panic(err)
 			}

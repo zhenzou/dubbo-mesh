@@ -6,7 +6,17 @@ import (
 	"dubbo-mesh/dubbo"
 	"dubbo-mesh/log"
 	"dubbo-mesh/derror"
+	"dubbo-mesh/registry"
 )
+
+func NewMockProvider(cfg *Config) *Provider {
+	server := NewServerWithRegistry(cfg, registry.DefaultMock())
+	client := dubbo.NewClient(cfg.DubboAddr)
+	provider := &Provider{server, client}
+	derror.Panic(provider.init())
+	server.handler = provider.invoke
+	return provider
+}
 
 func NewProvider(cfg *Config) *Provider {
 	server := NewServer(cfg)

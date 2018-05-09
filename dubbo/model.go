@@ -4,6 +4,7 @@ import (
 	"sync/atomic"
 	"errors"
 	"bytes"
+	"dubbo-mesh/util"
 )
 
 var (
@@ -68,7 +69,7 @@ func (this *Response) Body() []byte {
 
 	if this.Status == StatusOk {
 		//data = bytes.Join(split[1:len(split)-1], ParamSeparator)
-		return split[1]
+		return util.TrimCR(split[1])
 	}
 	return split[0]
 }

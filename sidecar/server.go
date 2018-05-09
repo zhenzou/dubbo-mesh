@@ -24,6 +24,10 @@ type Server struct {
 	handler  http.HandlerFunc
 }
 
+func NewServerWithRegistry(cfg *Config, registry registry.Registry) *Server {
+	return &Server{cfg: cfg, registry: registry}
+}
+
 func NewServer(cfg *Config) *Server {
 	return &Server{cfg: cfg, registry: registry.NewEtcdFromAddr(cfg.Etcd)}
 }

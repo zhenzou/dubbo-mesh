@@ -9,6 +9,14 @@ import (
 	"dubbo-mesh/derror"
 )
 
+func NewMockConsumer(cfg *Config) *Consumer {
+	server := NewServerWithRegistry(cfg, registry.DefaultMock())
+	consumer := &Consumer{Server: server}
+	derror.Panic(consumer.init())
+	server.handler = consumer.invoke
+	return consumer
+}
+
 func NewConsumer(cfg *Config) *Consumer {
 	server := NewServer(cfg)
 	consumer := &Consumer{Server: server}
@@ -33,7 +41,7 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	resp, err := http.PostForm("http://"+endPoint.String(), req.Form)
 	if err != nil {
-		w.WriteHeader(resp.StatusCode)
+		w.WriteHeader(http.StatusInternalServerError)
 	} else {
 		data, _ := util.ReadResponse(resp)
 		w.Write(data)

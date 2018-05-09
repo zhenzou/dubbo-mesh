@@ -15,6 +15,9 @@ function valid(){
 PROJ_BIN=${PROJ_ROOT}/../cmd
 SERVER_NAME=$2
 
+export GOOS=linux
+export GOARCH=amd64
+
 tags='jsoniter'
 mode="dev"
 
