@@ -9,10 +9,24 @@ const (
 )
 
 type Status struct {
-	Alive  int
-	Core   int
-	Memory int
-	Rate   int
+	System *System
+	Alive  int // 活跃连接数
+	Rate   int // 处理速率
+	Rtt    *Rtt
+}
+
+// 系统配置相关信息
+type System struct {
+	Core        int
+	TotalMemory int
+	FreeMemory  int
+}
+
+// RTT统计
+type Rtt struct {
+	Max int
+	Min int
+	Avg int
 }
 
 type EndPoint struct {
