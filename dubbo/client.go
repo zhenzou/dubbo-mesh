@@ -7,7 +7,7 @@ import (
 type Process func(request *Request) (resp *Response, err error)
 
 func NewClient(addr string) *Client {
-	client := &Client{pool: NewPool(200, addr)}
+	client := &Client{pool: NewPool(256, addr)}
 	client.init()
 	return client
 }

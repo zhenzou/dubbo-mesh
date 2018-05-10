@@ -7,7 +7,6 @@ import (
 	"context"
 
 	"dubbo-mesh/log"
-	"dubbo-mesh/registry"
 )
 
 type Config struct {
@@ -17,25 +16,21 @@ type Config struct {
 	Etcd       string
 }
 
+// 封装http.Server
 type Server struct {
 	*http.Server
-	cfg      *Config
-	registry registry.Registry
-	handler  http.HandlerFunc
+	port    int
+	handler http.HandlerFunc
 }
 
-func NewServerWithRegistry(cfg *Config, registry registry.Registry) *Server {
-	return &Server{cfg: cfg, registry: registry}
-}
-
-func NewServer(cfg *Config) *Server {
-	return &Server{cfg: cfg, registry: registry.NewEtcdFromAddr(cfg.Etcd)}
+func NewServer(port int) *Server {
+	return &Server{port: port}
 }
 
 func (this *Server) Run() error {
-	log.Info("server start to run on port ", this.cfg.ServerPort)
+	log.Info("server start to run on port ", this.port)
 	this.Server = &http.Server{
-		Addr:    fmt.Sprintf(":%d", this.cfg.ServerPort),
+		Addr:    fmt.Sprintf(":%d", this.port),
 		Handler: this.handler,
 	}
 	return this.ListenAndServe()

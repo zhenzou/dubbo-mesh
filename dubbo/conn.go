@@ -3,11 +3,11 @@ package dubbo
 import (
 	"net"
 	"errors"
+	"context"
+	"time"
 
 	"dubbo-mesh/log"
 	"dubbo-mesh/derror"
-	"context"
-	"time"
 )
 
 var (
@@ -108,7 +108,6 @@ func (this *Pool) Put(conn *Conn) {
 	select {
 	case this.ch <- conn:
 	default:
-		log.Info("close:", conn.LocalAddr())
 		conn.Close()
 	}
 }

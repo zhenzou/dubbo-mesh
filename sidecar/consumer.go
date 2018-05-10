@@ -5,28 +5,38 @@ import (
 	"math/rand"
 
 	"dubbo-mesh/registry"
-	"dubbo-mesh/util"
 	"dubbo-mesh/derror"
+	"dubbo-mesh/mesh"
 )
 
 func NewMockConsumer(cfg *Config) *Consumer {
-	server := NewServerWithRegistry(cfg, registry.DefaultMock())
-	consumer := &Consumer{Server: server}
-	derror.Panic(consumer.init())
-	server.handler = consumer.invoke
+	consumer := newConsumer(cfg, registry.DefaultMock())
 	return consumer
 }
 
 func NewConsumer(cfg *Config) *Consumer {
-	server := NewServer(cfg)
-	consumer := &Consumer{Server: server}
+	consumer := newConsumer(cfg, registry.NewEtcdFromAddr(cfg.Etcd))
+	return consumer
+}
+
+func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
+	server := NewServer(cfg.ServerPort)
+	consumer := &Consumer{
+		cfg:      cfg,
+		Server:   server,
+		registry: registry,
+		Client:   mesh.NewHttpClient(),
+	}
 	derror.Panic(consumer.init())
 	server.handler = consumer.invoke
 	return consumer
 }
 
 type Consumer struct {
+	mesh.Client
 	*Server
+	cfg       *Config
+	registry  registry.Registry
 	endpoints []*registry.EndPoint
 }
 
@@ -37,13 +47,21 @@ func (this *Consumer) init() error {
 }
 
 func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
-	endPoint := this.Elect()
-	req.ParseForm()
-	resp, err := http.PostForm("http://"+endPoint.String(), req.Form)
+	interfaceName := req.FormValue("interface")
+	method := req.FormValue("method")
+	paramType := req.FormValue("parameterTypesString")
+	param := req.FormValue("parameter")
+	inv := &mesh.Invocation{
+		Interface: interfaceName,
+		Method:    method,
+		ParamType: paramType,
+		Param:     param,
+	}
+	endpoint := this.Elect()
+	data, err := this.Invoke(endpoint, inv)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
-		data, _ := util.ReadResponse(resp)
 		w.Write(data)
 	}
 }
