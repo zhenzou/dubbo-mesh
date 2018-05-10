@@ -22,7 +22,7 @@ func defaultLogger() *zap.Logger {
 		zapcore.NewCore(defaultConsoleEncoder(), outSync, zap.LevelEnablerFunc(zapOutEnable)),
 	)
 
-	z := zap.New(core, zap.AddCallerSkip(1), zap.AddStacktrace(zapcore.ErrorLevel), zap.Development())
+	z := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1), zap.AddStacktrace(zapcore.ErrorLevel), zap.Development())
 	return z
 }
 

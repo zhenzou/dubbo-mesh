@@ -58,13 +58,13 @@ func TestEtcd_Find(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		wantEndpoints []*EndPoint
+		wantEndpoints []*Endpoint
 		wantErr       bool
 	}{
 		{
 			name:          "service_hello",
 			args:          args{"service_hello"},
-			wantEndpoints: []*EndPoint{&EndPoint{Host: "192.168.3.2", Port: 1024}},
+			wantEndpoints: []*Endpoint{&Endpoint{Host: "192.168.3.2", Port: 1024}},
 			wantErr:       false,
 		},
 	}

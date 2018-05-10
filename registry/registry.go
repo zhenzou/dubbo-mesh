@@ -29,17 +29,17 @@ type Rtt struct {
 	Avg int
 }
 
-type EndPoint struct {
+type Endpoint struct {
 	Host  string
 	Port  int
 	Value *Status
 }
 
-func (this *EndPoint) String() string {
+func (this *Endpoint) String() string {
 	return fmt.Sprintf("%s:%d", this.Host, this.Port)
 }
 
 type Registry interface {
 	Register(serviceName string, port int) error
-	Find(serviceName string) ([]*EndPoint, error)
+	Find(serviceName string) ([]*Endpoint, error)
 }

@@ -25,7 +25,7 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 		cfg:      cfg,
 		Server:   server,
 		registry: registry,
-		Client:   mesh.NewHttpClient(),
+		Client:   mesh.NewTcpClient(),
 	}
 	derror.Panic(consumer.init())
 	server.handler = consumer.invoke
@@ -37,7 +37,7 @@ type Consumer struct {
 	*Server
 	cfg       *Config
 	registry  registry.Registry
-	endpoints []*registry.EndPoint
+	endpoints []*registry.Endpoint
 }
 
 func (this *Consumer) init() error {
@@ -68,7 +68,7 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 
 // 负载均衡，选择其中一个
 // TODO 优化策略
-func (this *Consumer) Elect() *registry.EndPoint {
+func (this *Consumer) Elect() *registry.Endpoint {
 	i := rand.Intn(len(this.endpoints))
 	return this.endpoints[i]
 }

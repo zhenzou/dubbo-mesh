@@ -72,13 +72,13 @@ func (this *Etcd) prefix(serviceName string) string {
 	return key
 }
 
-func (this *Etcd) Find(serviceName string) (endpoints []*EndPoint, err error) {
+func (this *Etcd) Find(serviceName string) (endpoints []*Endpoint, err error) {
 	prefix := this.prefix(serviceName)
 	resp, err := this.client.Get(context.Background(), prefix, etcd.WithPrefix())
 	if err != nil {
 		return
 	}
-	endpoints = make([]*EndPoint, 0, resp.Count)
+	endpoints = make([]*Endpoint, 0, resp.Count)
 	for _, kv := range resp.Kvs {
 		key := string(kv.Key)
 		addr := strings.TrimPrefix(key, prefix)
@@ -93,7 +93,7 @@ func (this *Etcd) Find(serviceName string) (endpoints []*EndPoint, err error) {
 			log.Warn("get wrong service ", key)
 			continue
 		}
-		endpoint := &EndPoint{Host: split[0], Port: port}
+		endpoint := &Endpoint{Host: split[0], Port: port}
 		log.Debug("endpoint:", endpoint.String())
 		endpoints = append(endpoints, endpoint)
 	}

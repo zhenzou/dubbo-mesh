@@ -8,17 +8,17 @@ import (
 )
 
 func NewMockProvider(cfg *Config) *Provider {
-	client := dubbo.NewClient(cfg.DubboAddr)
-	server := mesh.NewHttpServer(cfg.ServerPort, client)
-	provider := &Provider{server, cfg, registry.DefaultMock()}
-	derror.Panic(provider.init())
-	return provider
+	return newProvider(cfg, registry.DefaultMock())
 }
 
 func NewProvider(cfg *Config) *Provider {
+	return newProvider(cfg, registry.NewEtcdFromAddr(cfg.Etcd))
+}
+
+func newProvider(cfg *Config, registry registry.Registry) *Provider {
 	client := dubbo.NewClient(cfg.DubboAddr)
-	server := mesh.NewHttpServer(cfg.ServerPort, client)
-	provider := &Provider{server, cfg, registry.NewEtcdFromAddr(cfg.Etcd)}
+	server := mesh.NewTcpServer(cfg.ServerPort, client)
+	provider := &Provider{server, cfg, registry}
 	derror.Panic(provider.init())
 	return provider
 }

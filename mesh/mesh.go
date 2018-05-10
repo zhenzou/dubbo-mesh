@@ -14,14 +14,14 @@ const (
 
 //  暂时只考虑Dubbo协议
 type Invocation struct {
-	Interface string
-	Method    string
-	ParamType string
-	Param     string
+	Interface string `json:"i"`
+	Method    string `json:"m"`
+	ParamType string `json:"pt"`
+	Param     string `json:"p"`
 }
 
 type Client interface {
-	Invoke(endpoint *registry.EndPoint, invocation *Invocation) ([]byte, error)
+	Invoke(endpoint *registry.Endpoint, invocation *Invocation) ([]byte, error)
 }
 
 type Server interface {

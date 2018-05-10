@@ -27,7 +27,7 @@ type HttpClient struct {
 	client *http.Client
 }
 
-func (this *HttpClient) Invoke(endpoint *registry.EndPoint, invocation *Invocation) ([]byte, error) {
+func (this *HttpClient) Invoke(endpoint *registry.Endpoint, invocation *Invocation) ([]byte, error) {
 	form := url.Values{}
 	form.Add(ParamInterface, invocation.Interface)
 	form.Add(ParamMethod, invocation.Method)

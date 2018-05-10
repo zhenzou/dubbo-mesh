@@ -1,11 +1,11 @@
 package registry
 
-func NewMock(endpoints []*EndPoint) Registry {
+func NewMock(endpoints []*Endpoint) Registry {
 	return &Mock{endpoints}
 }
 
 func DefaultMock() Registry {
-	return NewMock([]*EndPoint{
+	return NewMock([]*Endpoint{
 		{
 			Host: "127.0.0.1",
 			Port: 30001,
@@ -15,13 +15,13 @@ func DefaultMock() Registry {
 
 // mock 单机测试
 type Mock struct {
-	endpoints []*EndPoint
+	endpoints []*Endpoint
 }
 
 func (this *Mock) Register(serviceName string, port int) error {
 	return nil
 }
 
-func (this *Mock) Find(serviceName string) ([]*EndPoint, error) {
+func (this *Mock) Find(serviceName string) ([]*Endpoint, error) {
 	return this.endpoints, nil
 }
