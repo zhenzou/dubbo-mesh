@@ -1,25 +1,16 @@
 package mesh
 
 import (
-	"time"
 	"net"
-	"errors"
-	"context"
 	"fmt"
 	"sync"
 	"strings"
 	"bytes"
 
-	"dubbo-mesh/derror"
 	"dubbo-mesh/log"
 	"dubbo-mesh/registry"
 	"dubbo-mesh/dubbo"
 	"dubbo-mesh/util"
-)
-
-var (
-	PoolShutdownError = errors.New("pool shutdown")
-	ErrorResp         = []byte("error")
 )
 
 func NewTcpClient() Client {
@@ -33,22 +24,34 @@ type TcpClient struct {
 	pool map[*registry.Endpoint]*Pool
 }
 
+func (this *TcpClient) newPool(addr string) *Pool {
+	return NewPool(200, func() (net.Conn, error) {
+		conn, err := net.Dial("tcp", addr)
+		if err != nil {
+			return nil, err
+		}
+		log.Info("new ", conn.LocalAddr())
+
+		return conn, nil
+	})
+}
+
 func (this *TcpClient) Invoke(endpoint *registry.Endpoint, inv *Invocation) ([]byte, error) {
-	var conn net.Conn
+	var (
+		pool *Pool
+		ok   bool
+	)
 	// DCL
-	if pool, ok := this.pool[endpoint]; !ok {
+	if pool, ok = this.pool[endpoint]; !ok {
 		this.Lock()
 		if pool, ok = this.pool[endpoint]; !ok {
-			pool = NewPool(200, endpoint.String())
+			pool = this.newPool(endpoint.String())
 			this.pool[endpoint] = pool
 		}
 		this.Unlock()
-		conn, _ = pool.Get()
-		defer pool.Put(conn)
-	} else {
-		conn, _ = pool.Get()
-		defer pool.Put(conn)
 	}
+	conn, _ := pool.Get()
+	defer pool.Put(conn)
 	data := strings.Join([]string{inv.Interface, inv.Method, inv.ParamType, inv.Param}, "\n")
 
 	conn.Write(util.Int2Bytes(len(data)))
@@ -136,63 +139,4 @@ func (this *TcpServer) handle(conn net.Conn) error {
 
 func (this *TcpServer) Shutdown() error {
 	return this.listener.Close()
-}
-
-func NewPool(max int, addr string) *Pool {
-	log.Debug("addr ", addr)
-	pool := &Pool{addr: addr, ch: make(chan net.Conn, max)}
-	return pool
-}
-
-type Pool struct {
-	addr string
-	ch   chan net.Conn
-}
-
-func (this *Pool) new() (net.Conn, error) {
-	conn, err := net.Dial("tcp", this.addr)
-	if err != nil {
-		return nil, err
-	}
-	log.Info("new ", conn.LocalAddr())
-
-	return conn, nil
-}
-func (this *Pool) Get() (net.Conn, error) {
-	select {
-	case conn, more := <-this.ch:
-		if !more {
-			return nil, PoolShutdownError
-		}
-		return conn, nil
-	default:
-		return this.new()
-	}
-}
-
-// TODO POOl
-func (this *Pool) Put(conn net.Conn) {
-	select {
-	case this.ch <- conn:
-	default:
-		conn.Close()
-	}
-}
-
-func (this *Pool) Shutdown() error {
-	ctx, _ := context.WithTimeout(context.Background(), 1*time.Minute)
-	close(this.ch)
-	done := make(chan struct{})
-	go func() {
-		for conn := range this.ch {
-			derror.Warn(conn.Close())
-		}
-		done <- struct{}{}
-	}()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-done:
-		return nil
-	}
 }

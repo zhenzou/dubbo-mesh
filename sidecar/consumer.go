@@ -25,7 +25,7 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 		cfg:      cfg,
 		Server:   server,
 		registry: registry,
-		Client:   mesh.NewTcpClient(),
+		Client:   mesh.NewKcpClient(),
 	}
 	derror.Panic(consumer.init())
 	server.handler = consumer.invoke

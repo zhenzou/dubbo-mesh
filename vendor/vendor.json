@@ -146,6 +146,12 @@
 			"revisionTime": "2018-03-20T13:32:07Z"
 		},
 		{
+			"checksumSHA1": "NF6TrlMc/FVXT9YlMqNXHTEeAaI=",
+			"path": "github.com/xtaci/kcp-go",
+			"revision": "42bc1dfefff592fdb3affa793980c4f6ab4213e5",
+			"revisionTime": "2018-02-03T13:32:37Z"
+		},
+		{
 			"checksumSHA1": "HedK9m8E8iyib4bIBtIX7xprOgo=",
 			"path": "go.uber.org/atomic",
 			"revision": "8474b86a5a6f79c443ce4b2992817ff32cf208b8",
