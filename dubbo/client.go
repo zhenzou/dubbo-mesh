@@ -4,7 +4,7 @@ import (
 	"dubbo-mesh/json"
 )
 
-type Process func(request *Request) (resp *Response, err error)
+type Process func(conn *Conn, request *Request) (resp *Response, err error)
 
 func NewClient(addr string) *Client {
 	client := &Client{pool: NewPool(256, addr)}
@@ -33,7 +33,14 @@ func (this *Client) Invoke(interfaceName, method, paramType, param string) (resp
 
 	req := NewRequest("2.0.0", interfaceName, method, paramType, &invocation)
 
-	return this.process(req)
+	conn := this.getConn()
+	resp, err = this.process(conn, req)
+	if err != nil {
+		conn.Close()
+		return
+	}
+	this.closeConn(conn)
+	return
 }
 
 func (this *Client) Shutdown() {
@@ -51,9 +58,7 @@ func (this *Client) closeConn(conn *Conn) {
 }
 
 // TODO Retry
-func (this *Client) defaultProcess(request *Request) (resp *Response, err error) {
-	conn := this.getConn()
-	defer this.closeConn(conn)
+func (this *Client) defaultProcess(conn *Conn, request *Request) (resp *Response, err error) {
 	err = conn.WriteRequest(request)
 	if err != nil {
 		return

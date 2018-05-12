@@ -19,6 +19,7 @@ var (
 type Conn struct {
 	net.Conn
 	send bool
+	buf  []byte
 }
 
 func (this *Conn) WriteRequest(req *Request) (err error) {
@@ -33,11 +34,13 @@ func (this *Conn) WriteRequest(req *Request) (err error) {
 	data := EncodeInvocation(req.Data.(*Invocation))
 	EncodeInt(header, len(data), 12)
 
-	payload := make([]byte, HeaderLength+len(data))
+	//payload := this.buf[:HeaderLength+len(data)]
+	//payload := make([]byte, HeaderLength+len(data))
 
-	copy(payload, header)
-	copy(payload[HeaderLength:], data)
-	_, err = this.Write(payload)
+	//copy(payload, header)
+	//copy(payload[HeaderLength:], data)
+	_, err = this.Write(header)
+	_, err = this.Write(data)
 	if err != nil {
 		return
 	}
@@ -62,12 +65,18 @@ func (this *Conn) ReadResponse() (resp *Response, err error) {
 		return
 	}
 	length := header.DataLen()
-	data := make([]byte, length)
+	var data []byte
+	if length > 8192 {
+		data = make([]byte, length)
+	} else {
+		data = this.buf[:length]
+	}
 	_, err = this.Read(data)
 	if err != nil {
 		return
 	}
 	resp = NewResponse(header.Status(), header.RequestId(), data)
+	this.send = false
 	return
 }
 
@@ -89,8 +98,9 @@ func (this *Pool) new() (*Conn, error) {
 	}
 	log.Info("new ", conn.LocalAddr())
 
-	return &Conn{Conn: conn}, nil
+	return &Conn{Conn: conn, buf: make([]byte, 8192)}, nil
 }
+
 func (this *Pool) Get() (*Conn, error) {
 	select {
 	case conn, more := <-this.ch:
@@ -103,7 +113,6 @@ func (this *Pool) Get() (*Conn, error) {
 	}
 }
 
-// TODO POOl
 func (this *Pool) Put(conn *Conn) {
 	select {
 	case this.ch <- conn:
