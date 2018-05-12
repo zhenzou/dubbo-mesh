@@ -68,6 +68,7 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 		ParamType: paramType,
 		Param:     param,
 	}
+	// TODO retry,会影响性能
 	endpoint := this.Elect()
 	data, err := this.Invoke(endpoint, inv)
 	if err != nil {

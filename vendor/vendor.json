@@ -146,6 +146,12 @@
 			"revisionTime": "2018-03-20T13:32:07Z"
 		},
 		{
+			"checksumSHA1": "JXUVA1jky8ZX8w09p2t5KLs97Nc=",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
+			"revisionTime": "2017-01-30T11:31:45Z"
+		},
+		{
 			"checksumSHA1": "NF6TrlMc/FVXT9YlMqNXHTEeAaI=",
 			"path": "github.com/xtaci/kcp-go",
 			"revision": "42bc1dfefff592fdb3affa793980c4f6ab4213e5",

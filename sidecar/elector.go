@@ -114,25 +114,3 @@ type Status struct {
 	Min    time.Duration
 	Avg    time.Duration
 }
-
-type baseBalancer struct {
-}
-
-func (this *baseBalancer) RecordRtt(endpoint *registry.Endpoint, rtt time.Duration) {
-}
-
-func (this *baseBalancer) RecordError(endpoint *registry.Endpoint) {
-}
-
-func (this *baseBalancer) Elect() *registry.Endpoint {
-	panic("implement me")
-}
-
-type WrrBalancer struct {
-}
-
-type Balancer interface {
-	RecordRtt(endpoint *registry.Endpoint, rtt time.Duration)
-	RecordError(endpoint *registry.Endpoint)
-	Elect() *registry.Endpoint
-}

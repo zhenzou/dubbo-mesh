@@ -53,8 +53,10 @@ func (this *KcpClient) Invoke(endpoint *registry.Endpoint, inv *Invocation) ([]b
 		}
 		this.Unlock()
 	}
-	conn, _ := pool.Get()
-	defer pool.Put(conn)
+	conn, err := pool.Get()
+	if err != nil {
+		return nil, err
+	}
 	data := strings.Join([]string{inv.Interface, inv.Method, inv.ParamType, inv.Param}, "\n")
 
 	conn.Write(util.Int2Bytes(len(data)))
@@ -62,10 +64,11 @@ func (this *KcpClient) Invoke(endpoint *registry.Endpoint, inv *Invocation) ([]b
 	buf := make([]byte, 256)
 	n, err := conn.Read(buf)
 	if err != nil {
-		log.Warn(err.Error())
 		conn.Close()
+		log.Warn(err.Error())
 		return nil, err
 	}
+	pool.Put(conn)
 	return buf[:n], nil
 }
 

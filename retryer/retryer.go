@@ -2,8 +2,22 @@
 
 package retryer
 
+import (
+	"sync"
+)
+
+var (
+	retryPool = sync.Pool{
+		New: func() interface{} {
+			return &Retryer{}
+		},
+	}
+)
+
 func New() *Retryer {
-	return &Retryer{}
+	r := retryPool.Get().(*Retryer)
+	r.policy = nil
+	return r
 }
 
 // 重试器，如果policy为空，则不重试

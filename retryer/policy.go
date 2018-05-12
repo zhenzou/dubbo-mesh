@@ -5,8 +5,17 @@ package retryer
 import (
 	"math"
 	"time"
+	"sync"
 
 	"dubbo-mesh/log"
+)
+
+var (
+	policyPool = sync.Pool{
+		New: func() interface{} {
+			return &TimesPolicy{period: 100, maxPeriod: int64(1 * time.Millisecond)}
+		},
+	}
 )
 
 type Policy interface {
@@ -14,7 +23,10 @@ type Policy interface {
 }
 
 func NewTimesPolicy(max int64) Policy {
-	return &TimesPolicy{maxAttempts: max, period: 100, maxPeriod: int64(1 * time.Millisecond)}
+	policy := policyPool.Get().(*TimesPolicy)
+	policy.maxAttempts = max
+	policy.sleptForMillis = 0
+	return policy
 }
 
 // 限制次数的重试器
