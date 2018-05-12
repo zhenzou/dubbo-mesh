@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-
 	"dubbo-mesh/cmd"
 	"dubbo-mesh/log"
 	"dubbo-mesh/sidecar"
@@ -27,8 +25,8 @@ func main() {
 			return nil
 		},
 		func() error {
-			server = sidecar.NewMockProvider(cfg)
-			if err := server.Run(); err != http.ErrServerClosed {
+			server = sidecar.NewProvider(cfg)
+			if err := server.Run(); err != nil {
 				log.Panic(err)
 			}
 			return nil

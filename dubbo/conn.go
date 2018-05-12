@@ -34,11 +34,6 @@ func (this *Conn) WriteRequest(req *Request) (err error) {
 	data := EncodeInvocation(req.Data.(*Invocation))
 	EncodeInt(header, len(data), 12)
 
-	//payload := this.buf[:HeaderLength+len(data)]
-	//payload := make([]byte, HeaderLength+len(data))
-
-	//copy(payload, header)
-	//copy(payload[HeaderLength:], data)
 	_, err = this.Write(header)
 	_, err = this.Write(data)
 	if err != nil {

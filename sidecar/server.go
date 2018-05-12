@@ -14,6 +14,7 @@ type Config struct {
 	DubboAddr  string
 	ServerPort int
 	Etcd       string
+	Elector    int
 }
 
 // 封装http.Server

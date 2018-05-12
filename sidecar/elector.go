@@ -4,64 +4,89 @@ import (
 	"time"
 	"math/rand"
 	"sync/atomic"
+	"errors"
 
 	"dubbo-mesh/registry"
 	"dubbo-mesh/log"
 )
 
-type Elector func(endpoints []*Endpoint) *Endpoint
+const (
+	ElectorRandom = iota
+	ElectorRR
+	ElectorWRR
+)
 
-func RandomElector(endpoints []*Endpoint) *Endpoint {
-	i := rand.Intn(len(endpoints))
+func elector(elector int) Elector {
+	switch elector {
+	case ElectorRandom:
+		return &Random{}
+	case ElectorRR:
+		return &RoundRobin{}
+	case ElectorWRR:
+		return &WrrRandom{}
+	default:
+		panic(errors.New("unknown elector"))
+	}
+}
+
+type Elector interface {
+	Init(endpoint []*Endpoint)
+	Elect(endpoints []*Endpoint) *Endpoint
+}
+
+type Random struct {
+	total int
+}
+
+func (this *Random) Init(endpoint []*Endpoint) {
+	this.total = len(endpoint)
+}
+
+func (this *Random) Elect(endpoints []*Endpoint) *Endpoint {
+	i := rand.Intn(this.total)
 	return endpoints[i]
 }
 
+type RoundRobin struct {
+	index int32
+}
+
+func (this *RoundRobin) Init(endpoint []*Endpoint) {
+}
+
 // round robin
-func RrRandomElector() Elector {
-	var i int32 = 0
-	return func(endpoints []*Endpoint) *Endpoint {
-		endpoint := endpoints[i]
-		for !atomic.CompareAndSwapInt32(&i, i, int32((i+1)/int32(len(endpoints)))) {
-			log.Debug("rr:", i)
-		}
-
-		return endpoint
+func (this *RoundRobin) Elect(endpoints []*Endpoint) *Endpoint {
+	endpoint := endpoints[this.index]
+	for !atomic.CompareAndSwapInt32(&this.index, this.index, int32((this.index+1)/int32(len(endpoints)))) {
+		log.Debug("rr:", this.index)
 	}
+
+	return endpoint
 }
 
-type Weight struct {
-	Max int
-	Min int
+type WrrRandom struct {
+	weights map[*Endpoint]int
+	total   int
 }
 
-func (this *Weight) Match(i int) bool {
-	return i < this.Max && i >= this.Min
-
-}
-
-func WrrRandomElector(endpoints []*Endpoint) Elector {
-	var i int32 = 0
-	weights := make(map[*Endpoint]int)
-	total := 0
+func (this *WrrRandom) Init(endpoints []*Endpoint) {
+	this.weights = make(map[*Endpoint]int)
 	for _, endpoint := range endpoints {
 		weight := calculateWrr(endpoint)
-		weights[endpoint] = weight
-		total += calculateWrr(endpoint)
+		this.weights[endpoint] = weight
+		this.total += calculateWrr(endpoint)
 	}
-	return func(endpoints []*Endpoint) *Endpoint {
-		w := rand.Intn(total)
-		for endpoint, weight := range weights {
-			w -= weight
-			if w < 0 {
-				return endpoint
-			}
+}
+
+func (this *WrrRandom) Elect(endpoints []*Endpoint) *Endpoint {
+	w := rand.Intn(this.total)
+	for endpoint, weight := range this.weights {
+		w -= weight
+		if w < 0 {
+			return endpoint
 		}
-		endpoint := endpoints[i]
-		for !atomic.CompareAndSwapInt32(&i, i, int32((i+1)/int32(len(endpoints)))) {
-			log.Debug("rr:", i)
-		}
-		return endpoint
 	}
+	return nil
 }
 
 // 简单的计算权重
@@ -69,8 +94,15 @@ func calculateWrr(status *Endpoint) int {
 	return status.System.CpuNum + status.System.TotalMemory/100000
 }
 
+func NewEndpoint(endpoint *registry.Endpoint) *Endpoint {
+	return &Endpoint{
+		Endpoint: endpoint,
+		Status:   &Status{},
+	}
+}
+
 type Endpoint struct {
-	registry.Endpoint
+	*registry.Endpoint
 	Status *Status
 }
 

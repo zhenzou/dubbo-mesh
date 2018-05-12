@@ -27,7 +27,7 @@ func main() {
 			return nil
 		},
 		func() error {
-			server = sidecar.NewMockConsumer(cfg)
+			server = sidecar.NewConsumer(cfg)
 			if err := server.Run(); err != http.ErrServerClosed {
 				log.Panic(err)
 			}

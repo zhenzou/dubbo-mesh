@@ -2,11 +2,12 @@ package sidecar
 
 import (
 	"net/http"
-	"math/rand"
 
 	"dubbo-mesh/registry"
 	"dubbo-mesh/derror"
 	"dubbo-mesh/mesh"
+	"dubbo-mesh/log"
+	"dubbo-mesh/util"
 )
 
 func NewMockConsumer(cfg *Config) *Consumer {
@@ -25,7 +26,8 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 		cfg:      cfg,
 		Server:   server,
 		registry: registry,
-		Client:   mesh.NewKcpClient(),
+		Elector:  elector(cfg.Elector),
+		Client:   mesh.NewTcpClient(),
 	}
 	derror.Panic(consumer.init())
 	server.handler = consumer.invoke
@@ -37,13 +39,22 @@ type Consumer struct {
 	*Server
 	cfg       *Config
 	registry  registry.Registry
-	endpoints []*registry.Endpoint
+	endpoints []*Endpoint
+	Elector   Elector
 }
 
 func (this *Consumer) init() error {
-	var err error
-	this.endpoints, err = this.registry.Find(this.cfg.Service)
-	return err
+	endpoints, err := this.registry.Find(this.cfg.Service)
+	if err != nil {
+		return err
+	}
+	log.Info("get service:", util.ToJsonStr(endpoints))
+	this.endpoints = make([]*Endpoint, len(endpoints))
+	for i, endpoint := range endpoints {
+		this.endpoints[i] = NewEndpoint(endpoint)
+	}
+	this.Elector.Init(this.endpoints)
+	return nil
 }
 
 func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
@@ -69,6 +80,8 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 // 负载均衡，选择其中一个
 // TODO 优化策略
 func (this *Consumer) Elect() *registry.Endpoint {
-	i := rand.Intn(len(this.endpoints))
-	return this.endpoints[i]
+	if len(this.endpoints) == 1 {
+		return this.endpoints[0].Endpoint
+	}
+	return this.Elector.Elect(this.endpoints).Endpoint
 }

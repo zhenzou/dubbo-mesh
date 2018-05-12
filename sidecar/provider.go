@@ -17,7 +17,7 @@ func NewProvider(cfg *Config) *Provider {
 
 func newProvider(cfg *Config, registry registry.Registry) *Provider {
 	client := dubbo.NewClient(cfg.DubboAddr)
-	server := mesh.NewKcpServer(cfg.ServerPort, client)
+	server := mesh.NewTcpServer(cfg.ServerPort, client)
 	provider := &Provider{server, cfg, registry}
 	derror.Panic(provider.init())
 	return provider

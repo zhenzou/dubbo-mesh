@@ -51,7 +51,6 @@ func (this *TcpClient) Invoke(endpoint *registry.Endpoint, inv *Invocation) ([]b
 		this.Unlock()
 	}
 	conn, _ := pool.Get()
-	defer pool.Put(conn)
 	data := strings.Join([]string{inv.Interface, inv.Method, inv.ParamType, inv.Param}, "\n")
 
 	conn.Write(util.Int2Bytes(len(data)))
@@ -63,6 +62,7 @@ func (this *TcpClient) Invoke(endpoint *registry.Endpoint, inv *Invocation) ([]b
 		conn.Close()
 		return nil, err
 	}
+	pool.Put(conn)
 	return buf[:n], nil
 }
 
@@ -90,7 +90,9 @@ func (this *TcpServer) Run() error {
 		var conn net.Conn
 		conn, err = listener.Accept()
 		if err != nil {
-			log.Warn(err.Error())
+			if strings.Contains(err.Error(), "use of closed network connection") {
+				err = nil
+			}
 			break
 		}
 		go this.handle(conn)

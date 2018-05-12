@@ -5,11 +5,13 @@ import (
 	"context"
 	"strings"
 	"strconv"
+	"runtime"
 
 	etcd "github.com/coreos/etcd/clientv3"
 
 	"dubbo-mesh/util"
 	"dubbo-mesh/log"
+	"dubbo-mesh/json"
 )
 
 func NewEtcdFromAddr(addr string) Registry {
@@ -25,23 +27,16 @@ func NewEtcdFromAddr(addr string) Registry {
 }
 
 func NewEtcd(client *etcd.Client) Registry {
-	resp, err := client.Grant(context.Background(), 30)
-	if err != nil {
-		panic(err)
-	}
-	leaseID := resp.ID
-	etcd := &Etcd{leaseID, client}
-	go etcd.keepalive()
+	etcd := &Etcd{client: client}
 	return etcd
 }
 
 type Etcd struct {
-	leaseId etcd.LeaseID
-	client  *etcd.Client
+	client *etcd.Client
 }
 
-func (this *Etcd) keepalive() error {
-	ch, err := this.client.Lease.KeepAlive(context.Background(), this.leaseId)
+func (this *Etcd) keepalive(leaseId etcd.LeaseID) error {
+	ch, err := this.client.Lease.KeepAlive(context.Background(), leaseId)
 	if err != nil {
 		return err
 	}
@@ -53,7 +48,13 @@ func (this *Etcd) keepalive() error {
 
 func (this *Etcd) Register(serviceName string, port int) error {
 	key := this.strKey(serviceName, port)
-	_, err := this.client.Put(context.Background(), key, "", etcd.WithLease(this.leaseId))
+	resp, err := this.client.Grant(context.Background(), 30)
+	if err != nil {
+		panic(err)
+	}
+	leaseId := resp.ID
+	go this.keepalive(leaseId)
+	_, err = this.client.Put(context.Background(), key, this.system(), etcd.WithLease(leaseId))
 	if err != nil {
 		return err
 	}
@@ -64,7 +65,18 @@ func (this *Etcd) Register(serviceName string, port int) error {
 func (this *Etcd) strKey(serviceName string, port int) string {
 	key := fmt.Sprintf("/%s/%s/%s:%d", RootPath, serviceName, util.LocalIp(), port)
 	return key
+}
 
+func (this *Etcd) system() string {
+	mem := &runtime.MemStats{}
+	runtime.ReadMemStats(mem)
+	system := &System{
+		CpuNum:      runtime.NumCPU(),
+		TotalMemory: int(mem.Sys),
+		UsedMemory:  int(mem.Mallocs),
+	}
+	bytes, _ := json.Marshal(system)
+	return util.BytesToString(bytes)
 }
 
 func (this *Etcd) prefix(serviceName string) string {
@@ -82,7 +94,6 @@ func (this *Etcd) Find(serviceName string) (endpoints []*Endpoint, err error) {
 	for _, kv := range resp.Kvs {
 		key := string(kv.Key)
 		addr := strings.TrimPrefix(key, prefix)
-		log.Debug("get service :", key)
 		split := strings.Split(addr, ":")
 		if len(split) != 2 {
 			log.Warn("get wrong service ", key)
@@ -93,8 +104,9 @@ func (this *Etcd) Find(serviceName string) (endpoints []*Endpoint, err error) {
 			log.Warn("get wrong service ", key)
 			continue
 		}
-		endpoint := &Endpoint{Host: split[0], Port: port}
-		log.Debug("endpoint:", endpoint.String())
+		system := &System{}
+		json.Unmarshal(kv.Value, system)
+		endpoint := &Endpoint{Host: split[0], Port: port, System: system}
 		endpoints = append(endpoints, endpoint)
 	}
 	return

@@ -8,31 +8,17 @@ const (
 	RootPath = "dubbo-mesh"
 )
 
-type Status struct {
-	System *System
-	Alive  int // 活跃连接数
-	Rate   int // 处理速率
-	Rtt    *Rtt
-}
-
 // 系统配置相关信息
 type System struct {
-	Core        int
+	CpuNum      int
 	TotalMemory int
-	FreeMemory  int
-}
-
-// RTT统计
-type Rtt struct {
-	Max int
-	Min int
-	Avg int
+	UsedMemory  int
 }
 
 type Endpoint struct {
-	Host  string
-	Port  int
-	Value *Status
+	Host   string
+	Port   int
+	System *System
 }
 
 func (this *Endpoint) String() string {
