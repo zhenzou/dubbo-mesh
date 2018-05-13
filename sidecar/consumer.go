@@ -8,6 +8,7 @@ import (
 	"dubbo-mesh/mesh"
 	"dubbo-mesh/log"
 	"dubbo-mesh/util"
+	"time"
 )
 
 func NewMockConsumer(cfg *Config) *Consumer {
@@ -28,6 +29,7 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 		registry: registry,
 		Elector:  elector(cfg.Elector),
 		Client:   mesh.NewTcpClient(),
+		rtts:     make(chan *Rtt, 200),
 	}
 	derror.Panic(consumer.init())
 	server.handler = consumer.invoke
@@ -41,6 +43,7 @@ type Consumer struct {
 	registry  registry.Registry
 	endpoints []*Endpoint
 	Elector   Elector
+	rtts      chan *Rtt
 }
 
 func (this *Consumer) init() error {
@@ -54,6 +57,7 @@ func (this *Consumer) init() error {
 		this.endpoints[i] = NewEndpoint(endpoint)
 	}
 	this.Elector.Init(this.endpoints)
+	go this.record()
 	return nil
 }
 
@@ -70,7 +74,11 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	}
 	// TODO retry,会影响性能
 	endpoint := this.Elect()
-	data, err := this.Invoke(endpoint, inv)
+	log.Debug("status:", util.ToJsonStr(endpoint.Status))
+	start := time.Now()
+	data, err := this.Invoke(endpoint.Endpoint, inv)
+	end := time.Now()
+	this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
@@ -78,11 +86,36 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// TODO 异步，串行化
+func (this *Consumer) record() {
+	for rtt := range this.rtts {
+		endpoint := rtt.Endpoint
+		nano := uint64(rtt.Rtt)
+		err := rtt.Error
+		endpoint.Status.Count += 1
+		endpoint.Status.Total += nano
+		endpoint.Status.Latest = nano
+		if nano < endpoint.Status.Min {
+			endpoint.Status.Min = nano
+		}
+		if nano > endpoint.Status.Max {
+			endpoint.Status.Max = nano
+		}
+		if err != nil {
+			endpoint.Status.ErrorCount += 1
+			endpoint.Status.Error += 1
+		} else {
+			endpoint.Status.Error = 0
+		}
+	}
+
+}
+
 // 负载均衡，选择其中一个
 // TODO 优化策略
-func (this *Consumer) Elect() *registry.Endpoint {
+func (this *Consumer) Elect() *Endpoint {
 	if len(this.endpoints) == 1 {
-		return this.endpoints[0].Endpoint
+		return this.endpoints[0]
 	}
-	return this.Elector.Elect(this.endpoints).Endpoint
+	return this.Elector.Elect(this.endpoints)
 }
