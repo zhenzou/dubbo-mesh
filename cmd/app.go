@@ -13,12 +13,14 @@ var (
 	Port      int
 	DubboPort int
 	Etcd      string
+	Memory    int
 	Name      string
 	Service   string
 )
 
 func init() {
 	flag.IntVar(&CpuNum, "cpunum", runtime.NumCPU(), "指定cpu数量，默认CPU核数")
+	flag.IntVar(&Memory, "m", 2048, "内存数，单位是M")
 	flag.IntVar(&Port, "p", 20000, "监听端口，默认是20000,consumer端口")
 	flag.IntVar(&DubboPort, "dp", 20880, "dubbo服务端口")
 	flag.StringVar(&Etcd, "e", "http://127.0.0.1:2379", "Etcd 服务地址")

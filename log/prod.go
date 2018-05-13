@@ -16,8 +16,17 @@ var (
 
 func defaultLogger() *zap.Logger {
 
-	errSync := zapcore.AddSync(os.Stderr)
-	outSync := zapcore.AddSync(os.Stdout)
+	infoFile, err := os.OpenFile("/root/logs/info.log", os.O_CREATE|os.O_TRUNC|os.O_RDWR, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	errorFile, err := os.OpenFile("/root/logs/error.log", os.O_CREATE|os.O_TRUNC|os.O_RDWR, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	errSync := zapcore.AddSync(errorFile)
+	outSync := zapcore.AddSync(infoFile)
+
 	core := zapcore.NewTee(
 		zapcore.NewCore(defaultConsoleEncoder(), errSync, zap.LevelEnablerFunc(zapErrEnable)),
 		zapcore.NewCore(defaultConsoleEncoder(), outSync, zap.LevelEnablerFunc(zapOutEnable)),

@@ -132,7 +132,7 @@ func (this *DrrRandom) initCalculateWrr(endpoint *Endpoint) int {
 // 动态的计算权重，考虑系统配置和运行状态
 func (this *DrrRandom) cronCalculateDrr() {
 	tick := time.Tick(time.Second)
-	for _ := range tick {
+	for _ = range tick {
 		for endpoint := range this.weights {
 			init := endpoint.System.CpuNum + endpoint.System.TotalMemory/100000
 			dw := this.dw(endpoint.Status)

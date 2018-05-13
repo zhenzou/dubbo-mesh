@@ -12,6 +12,7 @@ import (
 	"dubbo-mesh/util"
 	"dubbo-mesh/log"
 	"dubbo-mesh/json"
+	"dubbo-mesh/cmd"
 )
 
 func NewEtcdFromAddr(addr string) Registry {
@@ -69,10 +70,9 @@ func (this *Etcd) strKey(serviceName string, port int) string {
 
 func (this *Etcd) system() string {
 	mem := &runtime.MemStats{}
-	runtime.ReadMemStats(mem)
 	system := &System{
 		CpuNum:      runtime.NumCPU(),
-		TotalMemory: int(mem.Sys),
+		TotalMemory: cmd.Memory,
 		UsedMemory:  int(mem.Mallocs),
 	}
 	bytes, _ := json.Marshal(system)
