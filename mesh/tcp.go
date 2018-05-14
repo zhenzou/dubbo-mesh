@@ -6,6 +6,7 @@ import (
 	"sync"
 	"strings"
 	"bytes"
+	"io"
 
 	"dubbo-mesh/log"
 	"dubbo-mesh/registry"
@@ -92,9 +93,9 @@ func (this *TcpServer) Run() error {
 		conn, err = listener.Accept()
 		if err != nil {
 			if strings.Contains(err.Error(), "use of closed network connection") {
-				err = nil
+				return nil
 			}
-			break
+			continue
 		}
 		go this.handle(conn)
 	}
@@ -106,9 +107,13 @@ func (this *TcpServer) handle(conn net.Conn) error {
 	l := make([]byte, 4)
 	for {
 		_, err := conn.Read(l)
+		if err == io.EOF {
+			err = nil
+			break
+		}
 		if err != nil {
 			log.Warn(err.Error())
-			break
+			continue
 		}
 		length := util.Bytes2Int(l)
 		log.Debug("length:", length)

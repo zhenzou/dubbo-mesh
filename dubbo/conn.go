@@ -16,6 +16,7 @@ var (
 	ParamSeparator         = []byte("\n")
 )
 
+// TODO 心跳
 type Conn struct {
 	net.Conn
 	send bool
@@ -48,6 +49,7 @@ func (this *Conn) Close() (err error) {
 	return this.Conn.Close()
 }
 
+// 暂时不判断是否是请求
 func (this *Conn) ReadResponse() (resp *Response, err error) {
 	if !this.send {
 		err = ReadBeforeRequestError

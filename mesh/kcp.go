@@ -6,6 +6,7 @@ import (
 	"sync"
 	"strings"
 	"bytes"
+	"io"
 
 	"github.com/xtaci/kcp-go"
 
@@ -97,7 +98,7 @@ func (this *KcpServer) Run() error {
 		conn, err = listener.Accept()
 		if err != nil {
 			log.Warn(err.Error())
-			break
+			continue
 		}
 		go this.handle(conn)
 	}
@@ -109,9 +110,13 @@ func (this *KcpServer) handle(conn net.Conn) error {
 	l := make([]byte, 4)
 	for {
 		_, err := conn.Read(l)
+		if err == io.EOF {
+			err = nil
+			break
+		}
 		if err != nil {
 			log.Warn(err.Error())
-			break
+			continue
 		}
 		length := util.Bytes2Int(l)
 		log.Debug("length:", length)

@@ -4,11 +4,18 @@ import (
 	"sync/atomic"
 	"errors"
 	"bytes"
+
 	"dubbo-mesh/util"
 )
 
 var (
 	nextId int64
+)
+
+const (
+	ResponseNullValue     = 2
+	ResponseValue         = 1
+	ResponseWithException = 0
 )
 
 type Invocation struct {
