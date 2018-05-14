@@ -23,6 +23,7 @@ func main() {
 				ServerPort: cmd.Port,
 				Etcd:       cmd.Etcd,
 				Service:    cmd.Service,
+				Balancer:   2,
 			}
 			return nil
 		},

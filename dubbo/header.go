@@ -35,11 +35,15 @@ func NewHeader() interface{} {
 	header := make([]byte, HeaderLength)
 	header[0] = Magic[0]
 	header[1] = Magic[1]
-	header[2 ] = FlagRequest | 6
 	return Header(header)
 }
 
 type Header []byte
+
+// 判断是否请求，如果是请求则忽略
+func (this Header) Req() bool {
+	return this[2]&FlagRequest != 0
+}
 
 // 通过Header获取payload的长度
 func (this Header) DataLen() int {

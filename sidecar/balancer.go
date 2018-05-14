@@ -9,6 +9,7 @@ import (
 
 	"dubbo-mesh/registry"
 	"dubbo-mesh/log"
+	"dubbo-mesh/util"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 	ElectorWRR
 )
 
-func elector(elector int) Elector {
+func elector(elector int) Banlancer {
 	switch elector {
 	case ElectorRandom:
 		return &Random{}
@@ -30,7 +31,7 @@ func elector(elector int) Elector {
 	}
 }
 
-type Elector interface {
+type Banlancer interface {
 	Init(endpoint []*Endpoint)
 	Elect(endpoints []*Endpoint) *Endpoint
 }
@@ -69,32 +70,61 @@ func (this *RoundRobin) Elect(endpoints []*Endpoint) *Endpoint {
 
 type WrrRandom struct {
 	weights map[*Endpoint]int
-	total   int
+	index   int
+	max     int
+	cw      int // 当前权重
 }
 
 func (this *WrrRandom) Init(endpoints []*Endpoint) {
+	this.index = -1
 	this.weights = make(map[*Endpoint]int)
 	for _, endpoint := range endpoints {
 		weight := this.calculateWrr(endpoint)
 		this.weights[endpoint] = weight
-		this.total += this.calculateWrr(endpoint)
+	}
+	gcd := this.weightGcd()
+	for k, weight := range this.weights {
+		max := weight / gcd
+		this.weights[k] = max
+		if max > this.max {
+			this.max = max
+		}
 	}
 }
 
 func (this *WrrRandom) Elect(endpoints []*Endpoint) *Endpoint {
-	w := rand.Intn(this.total)
-	for endpoint, weight := range this.weights {
-		w -= weight
-		if w < 0 {
-			return endpoint
+
+	for {
+		this.index = (this.index + 1) % len(endpoints)
+		if this.index == 0 {
+			this.cw = this.cw - 1
+			if this.cw <= 0 {
+				this.cw = this.max
+			}
+		}
+		end := endpoints[this.index]
+		if this.weights[end] >= this.cw {
+			return end
 		}
 	}
 	return nil
 }
 
-// 简单的计算权重
+func (r *WrrRandom) weightGcd() int {
+	divisor := -1
+	for _, s := range r.weights {
+		if divisor == -1 {
+			divisor = s
+		} else {
+			divisor = util.Gcd(divisor, s)
+		}
+	}
+	return divisor
+}
+
+// 简单的计算权重，暂时 就把内存做为权重
 func (this *WrrRandom) calculateWrr(status *Endpoint) int {
-	return status.System.CpuNum + status.System.TotalMemory/100000
+	return status.System.TotalMemory
 }
 
 // 动态权重变化

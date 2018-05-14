@@ -27,7 +27,7 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 		cfg:      cfg,
 		Server:   server,
 		registry: registry,
-		Elector:  elector(cfg.Elector),
+		Elector:  elector(cfg.Balancer),
 		Client:   mesh.NewTcpClient(),
 		rtts:     make(chan *Rtt, 200),
 	}
@@ -42,7 +42,7 @@ type Consumer struct {
 	cfg       *Config
 	registry  registry.Registry
 	endpoints []*Endpoint
-	Elector   Elector
+	Elector   Banlancer
 	rtts      chan *Rtt
 }
 

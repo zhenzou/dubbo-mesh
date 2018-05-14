@@ -73,7 +73,6 @@ func (this *Response) Error() error {
 // 为了比赛的 case 优化
 func (this *Response) Body() []byte {
 	split := bytes.Split(this.Payload, ParamSeparator)
-
 	if this.Status == StatusOk {
 		//data = bytes.Join(split[1:len(split)-1], ParamSeparator)
 		return util.TrimCR(split[1])

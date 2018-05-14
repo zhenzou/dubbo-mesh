@@ -116,8 +116,6 @@ func (this *TcpServer) handle(conn net.Conn) error {
 			continue
 		}
 		length := util.Bytes2Int(l)
-		log.Debug("length:", length)
-
 		buf := buf[:length]
 		_, err = conn.Read(buf)
 		if err != nil {

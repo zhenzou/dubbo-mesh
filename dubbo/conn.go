@@ -8,6 +8,7 @@ import (
 
 	"dubbo-mesh/log"
 	"dubbo-mesh/derror"
+	"dubbo-mesh/json"
 )
 
 var (
@@ -24,7 +25,9 @@ type Conn struct {
 }
 
 func (this *Conn) WriteRequest(req *Request) (err error) {
-	header := headerPool.Get().(Header).Bytes()
+	header := headerPool.Get().(Header)
+	defer headerPool.Put(header)
+	header[2] = FlagRequest | 6
 	if req.TwoWay {
 		header[2] |= FlagTwoWay
 	}
@@ -34,7 +37,6 @@ func (this *Conn) WriteRequest(req *Request) (err error) {
 	EncodeInt64(header, req.Id, 4)
 	data := EncodeInvocation(req.Data.(*Invocation))
 	EncodeInt(header, len(data), 12)
-
 	_, err = this.Write(header)
 	_, err = this.Write(data)
 	if err != nil {
@@ -49,14 +51,14 @@ func (this *Conn) Close() (err error) {
 	return this.Conn.Close()
 }
 
-// 暂时不判断是否是请求
+// 暂时不判断是否是请求，跑benchmark不会很久
 func (this *Conn) ReadResponse() (resp *Response, err error) {
 	if !this.send {
 		err = ReadBeforeRequestError
 		return
 	}
 	header := headerPool.Get().(Header)
-	var _ int
+	defer headerPool.Put(header)
 	_, err = this.Read(header)
 	if err != nil {
 		return
@@ -75,6 +77,16 @@ func (this *Conn) ReadResponse() (resp *Response, err error) {
 	resp = NewResponse(header.Status(), header.RequestId(), data)
 	this.send = false
 	return
+}
+
+func (this *Conn) HeartBeat(header Header) (err error) {
+	header[2] |= 0 | FlagTwoWay | 6
+	header[3] = StatusOk
+	data, _ := json.Marshal(nil)
+	EncodeInt(header, len(data), 12)
+	_, err = this.Write(header)
+	_, err = this.Write(data)
+	return err
 }
 
 func NewPool(max int, dubboAddr string) *Pool {
