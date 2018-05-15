@@ -13,8 +13,8 @@ COPY --from=builder /root/workspace/services/mesh-consumer/target/mesh-consumer-
 COPY --from=builder /usr/local/bin/docker-entrypoint.sh /usr/local/bin
 
 COPY start-agent.sh /usr/local/bin
-COPY consumer /root/dists/consumer
-COPY provider /root/dists/provider
+COPY dist/consumer /root/dists/consumer
+COPY dist/provider /root/dists/provider
 
 RUN set -ex && mkdir -p /root/logs
 
