@@ -1,6 +1,7 @@
 #!/bin/sh
 
 PROJ_ROOT=`dirname $0`
+PROJ_DIST=`dirname $0`/dist/
 function valid(){
 	if [ $2 = "all" ];then
 		echo 1
@@ -28,14 +29,14 @@ fi
 echo build with mode ${mode}
 echo build with tags ${tags}
 
-sources=`find $PROJ_BIN -name "main.go"`
-for source in $sources;do
-    dir=`dirname $source`
+sources=`find ${PROJ_BIN} -name "main.go"`
+for source in ${sources};do
+    dir=`dirname ${source}`
     
     ok=`valid "${source}" "${SERVER_NAME}"`
     if [ $ok -gt 0 ];then
     	name=`basename ${dir}`
-	    if go build -tags "${tags}" -o $dir/$name $source;then
+	    if go build -tags "${tags}" -o ${PROJ_DIST}/${name} ${source};then
 	       echo "$name build success"
 	    else
 	       echo "$name build faild"
