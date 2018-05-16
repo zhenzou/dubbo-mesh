@@ -95,6 +95,7 @@ func (this *TcpServer) Run() error {
 			if strings.Contains(err.Error(), "use of closed network connection") {
 				return nil
 			}
+                        log.Warn("err:",err.Error())
 			continue
 		}
 		go this.handle(conn)

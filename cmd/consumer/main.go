@@ -7,6 +7,7 @@ import (
 	"dubbo-mesh/cmd"
 	"dubbo-mesh/log"
 	"dubbo-mesh/sidecar"
+	"dubbo-mesh/util"
 )
 
 func main() {
@@ -25,6 +26,7 @@ func main() {
 				Service:    cmd.Service,
 				Balancer:   2,
 			}
+                        log.Debug("cfg:",util.ToJsonStr(cfg))
 			return nil
 		},
 		func() error {
