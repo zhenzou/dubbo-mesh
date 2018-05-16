@@ -1,13 +1,14 @@
 # Builder container
 FROM registry.cn-hangzhou.aliyuncs.com/aliware2018/services AS builder
-FROM golang
+# FROM golang
 
-WORKDIR $GOPATH/src/dubbo-mesh
-ADD . $GOPATH/src/dubbo-mesh
+COPY . /root/dists/agent
+WORKDIR /root/dists/agent
 # RUN set -ex && bash build/build_cmd.sh dev all
 RUN set -ex
 
 # Runner container
+FROM registry.cn-hangzhou.aliyuncs.com/aliware2018/debian-jdk8
 
 COPY --from=builder /root/workspace/services/mesh-provider/target/mesh-provider-1.0-SNAPSHOT.jar /root/dists/mesh-provider.jar
 COPY --from=builder /root/workspace/services/mesh-consumer/target/mesh-consumer-1.0-SNAPSHOT.jar /root/dists/mesh-consumer.jar
