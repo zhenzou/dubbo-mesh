@@ -16,6 +16,6 @@ COPY build/start-agent.sh /usr/local/bin
 COPY build/dist/consumer /root/dists/consumer
 COPY build/dist/provider /root/dists/provider
 
-RUN set -ex && mkdir -p /root/logs
+RUN set -ex && && chmod a+x /usr/local/bin/start-agent.sh && mkdir -p /root/logs
 
 ENTRYPOINT ["docker-entrypoint.sh"]
