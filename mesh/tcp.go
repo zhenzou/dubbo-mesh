@@ -95,7 +95,7 @@ func (this *TcpServer) Run() error {
 			if strings.Contains(err.Error(), "use of closed network connection") {
 				return nil
 			}
-                        log.Warn("err:",err.Error())
+			log.Warn("err:", err.Error())
 			continue
 		}
 		go this.handle(conn)
@@ -123,14 +123,9 @@ func (this *TcpServer) handle(conn net.Conn) error {
 			log.Warn(err.Error())
 			break
 		}
-		inv := &Invocation{}
 		split := bytes.Split(buf, []byte("\n"))
-		inv.Interface = util.BytesToString(split[0])
-		inv.Method = util.BytesToString(split[1])
-		inv.ParamType = util.BytesToString(split[2])
-		inv.Param = util.BytesToString(split[3])
 
-		resp, err := this.client.Invoke(inv.Interface, inv.Method, inv.ParamType, inv.Param)
+		resp, err := this.client.Invoke(util.BytesToString(split[0]), util.BytesToString(split[1]), util.BytesToString(split[2]), util.BytesToString(split[3]))
 		if err != nil {
 			log.Warn(err.Error())
 			conn.Write(ErrorResp)
