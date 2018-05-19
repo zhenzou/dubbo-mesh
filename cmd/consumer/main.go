@@ -24,9 +24,9 @@ func main() {
 				ServerPort: cmd.Port,
 				Etcd:       cmd.Etcd,
 				Service:    cmd.Service,
-				Balancer:   2,
+				Balancer:   sidecar.ElectorWRR,
 			}
-                        log.Debug("cfg:",util.ToJsonStr(cfg))
+			log.Debug("cfg:", util.ToJsonStr(cfg))
 			return nil
 		},
 		func() error {

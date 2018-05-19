@@ -24,7 +24,7 @@ func main() {
 				Etcd:       cmd.Etcd,
 				Service:    cmd.Service,
 			}
-                        log.Debug("cfg:",util.ToJsonStr(cfg))
+			log.Debug("cfg:", util.ToJsonStr(cfg))
 			return nil
 		},
 		func() error {

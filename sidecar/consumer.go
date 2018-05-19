@@ -92,7 +92,7 @@ func (this *Consumer) record() {
 		endpoint := rtt.Endpoint
 		nano := uint64(rtt.Rtt)
 		err := rtt.Error
-		endpoint.Status.Count += 1
+		endpoint.Status.TotalCount += 1
 		endpoint.Status.Total += nano
 		endpoint.Status.Latest = nano
 		if nano < endpoint.Status.Min {
