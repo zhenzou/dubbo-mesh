@@ -74,7 +74,7 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	}
 	// TODO retry,会影响性能
 	endpoint := this.Elect()
-	log.Debug("status:", util.ToJsonStr(endpoint.Status))
+	log.Debug("status:", util.ToJsonStr(endpoint.Meter))
 	start := time.Now()
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	end := time.Now()
@@ -92,20 +92,20 @@ func (this *Consumer) record() {
 		endpoint := rtt.Endpoint
 		nano := uint64(rtt.Rtt)
 		err := rtt.Error
-		endpoint.Status.TotalCount += 1
-		endpoint.Status.Total += nano
-		endpoint.Status.Latest = nano
-		if nano < endpoint.Status.Min {
-			endpoint.Status.Min = nano
+		endpoint.Meter.TotalCount += 1
+		endpoint.Meter.Total += nano
+		endpoint.Meter.Latest = nano
+		if nano < endpoint.Meter.Min {
+			endpoint.Meter.Min = nano
 		}
-		if nano > endpoint.Status.Max {
-			endpoint.Status.Max = nano
+		if nano > endpoint.Meter.Max {
+			endpoint.Meter.Max = nano
 		}
 		if err != nil {
-			endpoint.Status.ErrorCount += 1
-			endpoint.Status.Error += 1
+			endpoint.Meter.ErrorCount += 1
+			endpoint.Meter.Error += 1
 		} else {
-			endpoint.Status.Error = 0
+			endpoint.Meter.Error = 0
 		}
 	}
 

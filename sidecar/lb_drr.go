@@ -41,7 +41,7 @@ func (this *DynamicWeightRoundRobin) Init(endpoints []*Endpoint) {
 
 func (this *DynamicWeightRoundRobin) Elect(endpoints []*Endpoint) *Endpoint {
 	endpoint := this.WeightRoundRobin.Elect(endpoints)
-	log.Debugf("weight:%d,avg:%d ", endpoint.curWeight, endpoint.Status.Avg())
+	log.Debugf("weight:%d,avg:%d ", endpoint.curWeight, endpoint.Meter.Avg())
 	return endpoint
 }
 
@@ -145,7 +145,7 @@ func (rb *DynamicWeightRoundRobin) weightsGcd(endpoints []*Endpoint) int {
 // 动态的计算权重，考虑系统配置和运行状态
 func (this *DynamicWeightRoundRobin) mark(endpoints []*Endpoint) bool {
 	for i, srv := range endpoints {
-		this.ratings[i] = srv.Status.Rate()
+		this.ratings[i] = srv.Meter.Rate()
 	}
 	g, b := SplitFloat64(splitThreshold, 0, this.ratings)
 

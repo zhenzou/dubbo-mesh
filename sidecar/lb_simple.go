@@ -20,8 +20,8 @@ func (this *LeastLatest) Elect(endpoints []*Endpoint) *Endpoint {
 	var result *Endpoint
 	var min uint64 = math.MaxUint64
 	for _, endpoint := range endpoints {
-		if endpoint.Status.Latest < min {
-			min = endpoint.Status.Latest
+		if endpoint.Meter.Latest < min {
+			min = endpoint.Meter.Latest
 			result = endpoint
 		}
 	}
@@ -41,7 +41,7 @@ func (this *LeastAVG) Elect(endpoints []*Endpoint) *Endpoint {
 	var result *Endpoint
 	var min uint64 = math.MaxUint64
 	for _, endpoint := range endpoints {
-		if avg := endpoint.Status.Avg(); avg < min {
+		if avg := endpoint.Meter.Avg(); avg < min {
 			min = avg
 			result = endpoint
 		}
@@ -52,7 +52,7 @@ func (this *LeastAVG) Elect(endpoints []*Endpoint) *Endpoint {
 func NewEndpoint(endpoint *registry.Endpoint) *Endpoint {
 	return &Endpoint{
 		Endpoint: endpoint,
-		Status: &Meter{
+		Meter: &Meter{
 			Min: math.MaxUint64,
 		},
 	}
