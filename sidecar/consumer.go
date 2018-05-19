@@ -2,13 +2,11 @@ package sidecar
 
 import (
 	"net/http"
-
 	"dubbo-mesh/registry"
 	"dubbo-mesh/derror"
 	"dubbo-mesh/mesh"
 	"dubbo-mesh/log"
 	"dubbo-mesh/util"
-	"time"
 )
 
 func NewMockConsumer(cfg *Config) *Consumer {
@@ -57,7 +55,7 @@ func (this *Consumer) init() error {
 		this.endpoints[i] = NewEndpoint(endpoint)
 	}
 	this.Elector.Init(this.endpoints)
-	go this.record()
+	//go this.record()
 	return nil
 }
 
@@ -74,11 +72,11 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	}
 	// TODO retry,会影响性能
 	endpoint := this.Elect()
-	log.Debug("status:", util.ToJsonStr(endpoint.Meter))
-	start := time.Now()
+	//log.Debug("status:", util.ToJsonStr(endpoint.Meter))
+	//start := time.Now()dock
 	data, err := this.Invoke(endpoint.Endpoint, inv)
-	end := time.Now()
-	this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
+	//end := time.Now()
+	//this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
