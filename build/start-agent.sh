@@ -4,6 +4,8 @@ ETCD_HOST=etcd
 ETCD_PORT=2379
 ETCD_URL=http://${ETCD_HOST}:${ETCD_PORT}
 
+export GODEBUG=gctrace=1
+
 echo ETCD_URL = ${ETCD_URL}
 
 if [[ "$1" == "consumer" ]]; then

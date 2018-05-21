@@ -73,7 +73,7 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	}
 	// TODO retry,会影响性能
 	endpoint := this.Elect()
-	log.Debug("status:", util.ToJsonStr(endpoint.Meter))
+	//log.Debug("status:", util.ToJsonStr(endpoint.Meter))
 	//start := time.Now()dock
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	//end := time.Now()
