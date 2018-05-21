@@ -7,6 +7,7 @@ import (
 	"dubbo-mesh/mesh"
 	"dubbo-mesh/log"
 	"dubbo-mesh/util"
+	"sync/atomic"
 )
 
 func NewMockConsumer(cfg *Config) *Consumer {
@@ -55,7 +56,7 @@ func (this *Consumer) init() error {
 		this.endpoints[i] = NewEndpoint(endpoint)
 	}
 	this.Elector.Init(this.endpoints)
-	//go this.record()
+	//go this.asyncRecord()
 	return nil
 }
 
@@ -72,7 +73,7 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	}
 	// TODO retry,会影响性能
 	endpoint := this.Elect()
-	//log.Debug("status:", util.ToJsonStr(endpoint.Meter))
+	log.Debug("status:", util.ToJsonStr(endpoint.Meter))
 	//start := time.Now()dock
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	//end := time.Now()
@@ -84,8 +85,25 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// TODO 异步，串行化
-func (this *Consumer) record() {
+func (this *Consumer) syncRecord(endpoint *Endpoint, nano uint64, err error) {
+	atomic.AddUint64(&endpoint.Meter.TotalCount, 1)
+	atomic.AddUint64(&endpoint.Meter.Total, nano)
+	atomic.StoreUint64(&endpoint.Meter.Latest, nano)
+	if nano < endpoint.Meter.Min {
+		atomic.StoreUint64(&endpoint.Meter.Min, nano)
+	}
+	if nano > endpoint.Meter.Max {
+		atomic.StoreUint64(&endpoint.Meter.Max, nano)
+	}
+	if err != nil {
+		atomic.AddUint64(&endpoint.Meter.ErrorCount, 1)
+		atomic.AddUint64(&endpoint.Meter.Error, 1)
+	} else {
+		atomic.StoreUint64(&endpoint.Meter.Error, 0)
+	}
+}
+
+func (this *Consumer) asyncRecord() {
 	for rtt := range this.rtts {
 		endpoint := rtt.Endpoint
 		nano := uint64(rtt.Rtt)
