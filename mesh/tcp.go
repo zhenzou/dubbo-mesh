@@ -57,7 +57,7 @@ func (this *TcpClient) Invoke(endpoint *registry.Endpoint, inv *Invocation) ([]b
 	conn.Write(util.Int2Bytes(len(data)))
 	conn.Write(util.StringToBytes(data))
 	//
-	buf := make([]byte, 256)
+	buf := make([]byte, 16)
 	n, err := conn.Read(buf)
 	if err != nil {
 		log.Warn(err.Error())

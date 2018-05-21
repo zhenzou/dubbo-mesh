@@ -1,13 +1,15 @@
 package sidecar
 
 import (
+	"sync/atomic"
 	"net/http"
+
 	"dubbo-mesh/registry"
 	"dubbo-mesh/derror"
 	"dubbo-mesh/mesh"
 	"dubbo-mesh/log"
 	"dubbo-mesh/util"
-	"sync/atomic"
+	"sync"
 )
 
 func NewMockConsumer(cfg *Config) *Consumer {
@@ -34,6 +36,14 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 	server.handler = consumer.invoke
 	return consumer
 }
+
+var (
+	invPool = sync.Pool{
+		New: func() interface{} {
+			return &mesh.Invocation{}
+		},
+	}
+)
 
 type Consumer struct {
 	mesh.Client
@@ -65,12 +75,12 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	method := req.FormValue("method")
 	paramType := req.FormValue("parameterTypesString")
 	param := req.FormValue("parameter")
-	inv := &mesh.Invocation{
-		Interface: interfaceName,
-		Method:    method,
-		ParamType: paramType,
-		Param:     param,
-	}
+	inv := invPool.Get().(*mesh.Invocation)
+	defer invPool.Put(inv)
+	inv.Interface = interfaceName
+	inv.Method = method
+	inv.ParamType = paramType
+	inv.Param = param
 	// TODO retry,会影响性能
 	endpoint := this.Elect()
 	//log.Debug("status:", util.ToJsonStr(endpoint.Meter))
