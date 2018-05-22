@@ -3,13 +3,13 @@ package sidecar
 import (
 	"sync/atomic"
 	"net/http"
+	"sync"
 
 	"dubbo-mesh/registry"
 	"dubbo-mesh/derror"
 	"dubbo-mesh/mesh"
 	"dubbo-mesh/log"
 	"dubbo-mesh/util"
-	"sync"
 )
 
 func NewMockConsumer(cfg *Config) *Consumer {

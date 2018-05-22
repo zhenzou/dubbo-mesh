@@ -4,13 +4,13 @@ ETCD_HOST=etcd
 ETCD_PORT=2379
 ETCD_URL=http://${ETCD_HOST}:${ETCD_PORT}
 
-export GODEBUG=gctrace=1
+#export GODEBUG=gctrace=1
 
 echo ETCD_URL = ${ETCD_URL}
 
 if [[ "$1" == "consumer" ]]; then
   echo "Starting consumer agent..."
-  /root/dists/consumer -e=${ETCD_URL}
+  GOGC=off /root/dists/consumer -e=${ETCD_URL}
 elif [[ "$1" == "provider-small" ]]; then
   echo "Starting small provider agent..."
   /root/dists/provider -m=2048 -n=provider-small -p=30000 -dp=20880 -e=${ETCD_URL}
