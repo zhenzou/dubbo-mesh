@@ -25,6 +25,7 @@ func main() {
 				Etcd:       cmd.Etcd,
 				Service:    cmd.Service,
 				Balancer:   sidecar.ElectorWRR,
+				Server:     1,
 			}
 			log.Debug("cfg:", util.ToJsonStr(cfg))
 			return nil

@@ -140,6 +140,24 @@
 			"revisionTime": "2018-04-24T00:46:23Z"
 		},
 		{
+			"checksumSHA1": "PQKVn32h9WBCeusv3WEYovataz8=",
+			"path": "github.com/klauspost/compress/flate",
+			"revision": "5fb1f31b0a61e9858f12f39266e059848a5f1cea",
+			"revisionTime": "2018-04-02T19:26:10Z"
+		},
+		{
+			"checksumSHA1": "OwxCsfkDxdneY3h0qtnQJ3HVmXA=",
+			"path": "github.com/klauspost/compress/gzip",
+			"revision": "5fb1f31b0a61e9858f12f39266e059848a5f1cea",
+			"revisionTime": "2018-04-02T19:26:10Z"
+		},
+		{
+			"checksumSHA1": "0D1gxT/AC6dpNa4w2j87lsOWL5E=",
+			"path": "github.com/klauspost/compress/zlib",
+			"revision": "5fb1f31b0a61e9858f12f39266e059848a5f1cea",
+			"revisionTime": "2018-04-02T19:26:10Z"
+		},
+		{
 			"checksumSHA1": "xEHEfywV/9zZ/nPy/PJBF6xVn1o=",
 			"path": "github.com/klauspost/cpuid",
 			"revision": "e7e905edc00ea8827e58662220139109efea09db",
@@ -192,6 +210,19 @@
 			"path": "github.com/tjfoc/gmsm/sm4",
 			"revision": "0effa9db1ba81e1a21d70ab611ee2bab9424531a",
 			"revisionTime": "2018-04-04T02:25:40Z"
+		},
+		{
+			"checksumSHA1": "LTOa3BADhwvT0wFCknPueQALm8I=",
+			"path": "github.com/valyala/bytebufferpool",
+			"revision": "e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7",
+			"revisionTime": "2016-08-17T18:16:52Z"
+		},
+		{
+			"checksumSHA1": "gO5i2GKH3rqcSLPNydZuqA0/ayU=",
+			"path": "github.com/valyala/fasthttp",
+			"revision": "e5f51c11919d4f66400334047b897ef0a94c6f3c",
+			"revisionTime": "2017-12-07T12:09:41Z",
+			"tree": true
 		},
 		{
 			"checksumSHA1": "NF6TrlMc/FVXT9YlMqNXHTEeAaI=",

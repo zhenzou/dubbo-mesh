@@ -4,6 +4,9 @@ import (
 	"sync/atomic"
 	"net/http"
 	"sync"
+	"errors"
+
+	"github.com/valyala/fasthttp"
 
 	"dubbo-mesh/registry"
 	"dubbo-mesh/derror"
@@ -23,7 +26,12 @@ func NewConsumer(cfg *Config) *Consumer {
 }
 
 func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
-	server := NewServer(cfg.ServerPort)
+	var server Server
+	if cfg.Server == 0 {
+		server = NewServer(cfg.ServerPort)
+	} else {
+		server = NewFastServer(cfg.ServerPort)
+	}
 	consumer := &Consumer{
 		cfg:      cfg,
 		Server:   server,
@@ -33,7 +41,14 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 		rtts:     make(chan *Rtt, 200),
 	}
 	derror.Panic(consumer.init())
-	server.handler = consumer.invoke
+	switch s := server.(type) {
+	case *HttpServer:
+		s.handler = consumer.invoke
+	case *FastServer:
+		s.handler = consumer.fastInvoke
+	default:
+		panic(errors.New("wrong server"))
+	}
 	return consumer
 }
 
@@ -46,8 +61,8 @@ var (
 )
 
 type Consumer struct {
+	Server
 	mesh.Client
-	*Server
 	cfg       *Config
 	registry  registry.Registry
 	endpoints []*Endpoint
@@ -93,6 +108,33 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
 		w.Write(data)
+	}
+}
+
+func (this *Consumer) fastInvoke(ctx *fasthttp.RequestCtx) {
+	interfaceName := ctx.FormValue("interface")
+	method := ctx.FormValue("method")
+	paramType := ctx.FormValue("parameterTypesString")
+	param := ctx.FormValue("parameter")
+	inv := invPool.Get().(*mesh.Invocation)
+	defer invPool.Put(inv)
+	inv.Interface = util.BytesToString(interfaceName)
+	inv.Method = util.BytesToString(method)
+	inv.ParamType = util.BytesToString(paramType)
+	inv.Param = util.BytesToString(param)
+	// TODO retry,会影响性能
+	endpoint := this.Elect()
+	//log.Debug("status:", util.ToJsonStr(endpoint.Meter))
+	//start := time.Now()
+	data, err := this.Invoke(endpoint.Endpoint, inv)
+	//end := time.Now()
+	//this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()), err)
+	//this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
+	if err != nil {
+		ctx.SetStatusCode(http.StatusInternalServerError)
+	} else {
+		ctx.SetStatusCode(http.StatusOK)
+		ctx.Write(data)
 	}
 }
 

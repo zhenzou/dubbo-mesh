@@ -15,20 +15,26 @@ type Config struct {
 	ServerPort int
 	Etcd       string
 	Balancer   int
+	Server     int
+}
+
+type Server interface {
+	Run() error
+	Shutdown() error
 }
 
 // 封装http.Server
-type Server struct {
+type HttpServer struct {
 	*http.Server
 	port    int
 	handler http.HandlerFunc
 }
 
-func NewServer(port int) *Server {
-	return &Server{port: port}
+func NewServer(port int) Server {
+	return &HttpServer{port: port}
 }
 
-func (this *Server) Run() error {
+func (this *HttpServer) Run() error {
 	log.Info("server start to run on port ", this.port)
 	this.Server = &http.Server{
 		Addr:    fmt.Sprintf(":%d", this.port),
@@ -37,7 +43,7 @@ func (this *Server) Run() error {
 	return this.ListenAndServe()
 }
 
-func (this *Server) Shutdown() error {
+func (this *HttpServer) Shutdown() error {
 	log.Info("server start to shutdown")
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
