@@ -1,7 +1,10 @@
 package mesh
 
 import (
+	"bytes"
+
 	"dubbo-mesh/registry"
+	"dubbo-mesh/util"
 )
 
 type Protocol int
@@ -18,6 +21,12 @@ type Invocation struct {
 	Method    string `json:"m"`
 	ParamType string `json:"pt"`
 	Param     string `json:"p"`
+}
+
+func (this *Invocation) Data() []byte {
+	data := bytes.Join([][]byte{util.StringToBytes(this.Interface), util.StringToBytes(this.Method),
+		util.StringToBytes(this.ParamType), util.StringToBytes(this.Param)}, []byte("\n"))
+	return data
 }
 
 type Client interface {

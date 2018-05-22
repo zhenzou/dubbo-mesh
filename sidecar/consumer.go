@@ -84,9 +84,10 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	// TODO retry,会影响性能
 	endpoint := this.Elect()
 	//log.Debug("status:", util.ToJsonStr(endpoint.Meter))
-	//start := time.Now()dock
+	//start := time.Now()
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	//end := time.Now()
+	//this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()), err)
 	//this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

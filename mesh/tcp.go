@@ -26,7 +26,7 @@ type TcpClient struct {
 }
 
 func (this *TcpClient) newPool(addr string) *Pool {
-	return NewPool(256, func() (net.Conn, error) {
+	return NewPool(200, func() (net.Conn, error) {
 		conn, err := net.Dial("tcp", addr)
 		if err != nil {
 			return nil, err
@@ -52,11 +52,9 @@ func (this *TcpClient) Invoke(endpoint *registry.Endpoint, inv *Invocation) ([]b
 		this.Unlock()
 	}
 	conn, _ := pool.Get()
-	data := strings.Join([]string{inv.Interface, inv.Method, inv.ParamType, inv.Param}, "\n")
-
+	data := inv.Data()
 	conn.Write(util.Int2Bytes(len(data)))
-	conn.Write(util.StringToBytes(data))
-	//
+	conn.Write(data)
 	buf := make([]byte, 16)
 	n, err := conn.Read(buf)
 	if err != nil {
