@@ -3,7 +3,6 @@ package sidecar
 import (
 	"math"
 
-	"dubbo-mesh/registry"
 )
 
 // 下面的两种会导致性能最好的负担太重
@@ -49,11 +48,21 @@ func (this *LeastAVG) Elect(endpoints []*Endpoint) *Endpoint {
 	return result
 }
 
-func NewEndpoint(endpoint *registry.Endpoint) *Endpoint {
-	return &Endpoint{
-		Endpoint: endpoint,
-		Meter: &Meter{
-			Min: math.MaxUint64,
-		},
+type LeastActive struct {
+}
+
+func (this *LeastActive) Init(endpoint []*Endpoint) {
+	// do nothing
+}
+
+func (this *LeastActive) Elect(endpoints []*Endpoint) *Endpoint {
+	var result *Endpoint
+	var min uint64 = math.MaxUint64
+	for _, endpoint := range endpoints {
+		if avg := endpoint.Meter.Avg(); avg < min {
+			min = avg
+			result = endpoint
+		}
 	}
+	return result
 }

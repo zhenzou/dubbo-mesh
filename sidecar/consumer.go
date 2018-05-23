@@ -36,7 +36,7 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 		cfg:      cfg,
 		Server:   server,
 		registry: registry,
-		Elector:  elector(cfg.Balancer),
+		Elector:  lb(cfg.Balancer),
 		Client:   mesh.NewTcpClient(),
 		rtts:     make(chan *Rtt, 200),
 	}

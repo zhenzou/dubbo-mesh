@@ -2,35 +2,39 @@ package sidecar
 
 import (
 	"errors"
+	"math"
 
 	"dubbo-mesh/registry"
 )
 
 const (
-	ElectorRandom = iota
-	ElectorRR
-	ElectorWRR
-	ElectorLL
-	ElectorLA
-	ElectorDRR
+	LB_Random  = iota
+	LB_RR
+	LB_WRR
+	LB_LL
+	LB_LAvg
+	LB_LActive
+	LB_DRR
 )
 
-func elector(elector int) Banlancer {
+func lb(elector int) Banlancer {
 	switch elector {
-	case ElectorRandom:
+	case LB_Random:
 		return &Random{}
-	case ElectorRR:
+	case LB_RR:
 		return &RoundRobin{}
-	case ElectorWRR:
+	case LB_WRR:
 		return &WeightRoundRobin{}
-	case ElectorLL:
+	case LB_LL:
 		return &LeastLatest{}
-	case ElectorLA:
+	case LB_LAvg:
 		return &LeastAVG{}
-	case ElectorDRR:
+	case LB_DRR:
 		return &DynamicWeightRoundRobin{}
+	case LB_LActive:
+		return &LeastActive{}
 	default:
-		panic(errors.New("unknown elector"))
+		panic(errors.New("unknown load balancer"))
 	}
 }
 
@@ -74,4 +78,13 @@ func (this *Meter) Avg() uint64 {
 // 正确处理率
 func (this *Meter) Rate() float64 {
 	return float64(this.TotalCount-this.ErrorCount) / float64(this.TotalCount)
+}
+
+func NewEndpoint(endpoint *registry.Endpoint) *Endpoint {
+	return &Endpoint{
+		Endpoint: endpoint,
+		Meter: &Meter{
+			Min: math.MaxUint64,
+		},
+	}
 }
