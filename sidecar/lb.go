@@ -11,7 +11,7 @@ const (
 	LB_Random  = iota
 	LB_RR
 	LB_WRR
-	LB_LL
+	LB_LLatest
 	LB_LAvg
 	LB_LActive
 	LB_DRR
@@ -25,7 +25,7 @@ func lb(elector int) Banlancer {
 		return &RoundRobin{}
 	case LB_WRR:
 		return &WeightRoundRobin{}
-	case LB_LL:
+	case LB_LLatest:
 		return &LeastLatest{}
 	case LB_LAvg:
 		return &LeastAVG{}

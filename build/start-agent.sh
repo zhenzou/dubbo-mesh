@@ -13,13 +13,13 @@ if [[ "$1" == "consumer" ]]; then
   GOGC=50 GODEBUG=gctrace=1 /root/dists/consumer -e=${ETCD_URL}
 elif [[ "$1" == "provider-small" ]]; then
   echo "Starting small provider agent..."
-  /root/dists/provider -m=2048 -n=provider-small -p=30000 -dp=20880 -e=${ETCD_URL}
+  /root/dists/provider -m=2 -n=provider-small -p=30000 -dp=20880 -e=${ETCD_URL}
 elif [[ "$1" == "provider-medium" ]]; then
   echo "Starting medium provider agent..."
-  /root/dists/provider -m=4096 -n=provider-medium -p=30000 -dp=20880 -e=${ETCD_URL}
+  /root/dists/provider -m=3 -n=provider-medium -p=30000 -dp=20880 -e=${ETCD_URL}
 elif [[ "$1" == "provider-large" ]]; then
   echo "Starting large provider agent..."
-  /root/dists/provider -m=6144 -n=provider-large -p=30000 -dp=20880  -e=${ETCD_URL}
+  /root/dists/provider -m=5 -n=provider-large -p=30000 -dp=20880  -e=${ETCD_URL}
 else
   echo "Unrecognized arguments, exit."
   exit 1
