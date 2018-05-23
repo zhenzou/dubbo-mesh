@@ -13,6 +13,7 @@ import (
 	"dubbo-mesh/mesh"
 	"dubbo-mesh/log"
 	"dubbo-mesh/util"
+	"time"
 )
 
 func NewMockConsumer(cfg *Config) *Consumer {
@@ -133,11 +134,11 @@ func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
 	endpoint := this.Elect()
 	atomic.AddInt32(&endpoint.Active, 1)
 	defer atomic.AddInt32(&endpoint.Active, -1)
-	//log.Debug("status:", util.ToJsonStr(endpoint.Meter))
-	//start := time.Now()
+	log.Debug("status:", util.ToJsonStr(endpoint.Meter))
+	start := time.Now()
 	data, err := this.Invoke(endpoint.Endpoint, inv)
-	//end := time.Now()
-	//this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()), err)
+	end := time.Now()
+	this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()), err)
 	//this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
 	return data, err
 }

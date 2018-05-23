@@ -7,6 +7,7 @@ import (
 	"errors"
 
 	"dubbo-mesh/derror"
+	"dubbo-mesh/log"
 )
 
 var (
@@ -41,6 +42,7 @@ func (this *Pool) Put(conn net.Conn) {
 	select {
 	case this.ch <- conn:
 	default:
+		log.Info("close:", conn.LocalAddr())
 		conn.Close()
 	}
 }
