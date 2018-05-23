@@ -79,6 +79,7 @@ func TestWeightRandom(t *testing.T) {
 	}
 	println(util.ToJsonStr(count))
 }
+
 func BenchmarkWeightRandom(b *testing.B) {
 	b.ReportAllocs()
 	b.StopTimer()
@@ -100,6 +101,32 @@ func BenchmarkWeightRandom(b *testing.B) {
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		end := wr.Elect(endpoints)
+		count[end.System.TotalMemory] = count[end.System.TotalMemory] + 1
+	}
+	println(util.ToJsonStr(count))
+}
+
+func BenchmarkLastActive(b *testing.B) {
+	b.ReportAllocs()
+	b.StopTimer()
+	la := &LeastActive{}
+
+	endpoints := []*Endpoint{
+		&Endpoint{
+			Endpoint: &registry.Endpoint{System: &registry.System{TotalMemory: 2048}}, Active: 100,
+		},
+		&Endpoint{
+			Endpoint: &registry.Endpoint{System: &registry.System{TotalMemory: 4096}}, Active: 200,
+		},
+		&Endpoint{
+			Endpoint: &registry.Endpoint{System: &registry.System{TotalMemory: 6144}}, Active: 50,
+		},
+	}
+	la.Init(endpoints)
+	count := map[int]int{}
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		end := la.Elect(endpoints)
 		count[end.System.TotalMemory] = count[end.System.TotalMemory] + 1
 	}
 	println(util.ToJsonStr(count))

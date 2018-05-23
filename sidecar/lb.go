@@ -46,6 +46,7 @@ type Banlancer interface {
 type Endpoint struct {
 	*registry.Endpoint
 	Meter       *Meter
+	Active      int32
 	good        bool
 	curWeight   int
 	originWight int

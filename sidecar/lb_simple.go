@@ -2,7 +2,6 @@ package sidecar
 
 import (
 	"math"
-
 )
 
 // 下面的两种会导致性能最好的负担太重
@@ -57,10 +56,10 @@ func (this *LeastActive) Init(endpoint []*Endpoint) {
 
 func (this *LeastActive) Elect(endpoints []*Endpoint) *Endpoint {
 	var result *Endpoint
-	var min uint64 = math.MaxUint64
+	var min int32 = math.MaxInt32
 	for _, endpoint := range endpoints {
-		if avg := endpoint.Meter.Avg(); avg < min {
-			min = avg
+		if act := endpoint.Active; act < min {
+			min = act
 			result = endpoint
 		}
 	}

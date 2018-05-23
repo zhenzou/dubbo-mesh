@@ -36,16 +36,16 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 		cfg:      cfg,
 		Server:   server,
 		registry: registry,
-		Elector:  lb(cfg.Balancer),
+		Balancer: lb(cfg.Balancer),
 		Client:   mesh.NewTcpClient(),
-		rtts:     make(chan *Rtt, 200),
+		rtts:     make(chan *Rtt, 256),
 	}
 	derror.Panic(consumer.init())
 	switch s := server.(type) {
 	case *HttpServer:
-		s.handler = consumer.invoke
+		s.handler = consumer.httpHandler
 	case *FastServer:
-		s.handler = consumer.fastInvoke
+		s.handler = consumer.fastHandler
 	default:
 		panic(errors.New("wrong server"))
 	}
@@ -66,7 +66,7 @@ type Consumer struct {
 	cfg       *Config
 	registry  registry.Registry
 	endpoints []*Endpoint
-	Elector   Banlancer
+	Balancer  Banlancer
 	rtts      chan *Rtt
 }
 
@@ -80,12 +80,12 @@ func (this *Consumer) init() error {
 	for i, endpoint := range endpoints {
 		this.endpoints[i] = NewEndpoint(endpoint)
 	}
-	this.Elector.Init(this.endpoints)
+	this.Balancer.Init(this.endpoints)
 	//go this.asyncRecord()
 	return nil
 }
 
-func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
+func (this *Consumer) httpHandler(w http.ResponseWriter, req *http.Request) {
 	interfaceName := req.FormValue("interface")
 	method := req.FormValue("method")
 	paramType := req.FormValue("parameterTypesString")
@@ -96,14 +96,9 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	inv.Method = method
 	inv.ParamType = paramType
 	inv.Param = param
-	// TODO retry,会影响性能
-	endpoint := this.Elect()
-	//log.Debug("status:", util.ToJsonStr(endpoint.Meter))
-	//start := time.Now()
-	data, err := this.Invoke(endpoint.Endpoint, inv)
-	//end := time.Now()
-	//this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()), err)
-	//this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
+
+	data, err := this.invoke(inv)
+
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
@@ -111,7 +106,7 @@ func (this *Consumer) invoke(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (this *Consumer) fastInvoke(ctx *fasthttp.RequestCtx) {
+func (this *Consumer) fastHandler(ctx *fasthttp.RequestCtx) {
 	interfaceName := ctx.FormValue("interface")
 	method := ctx.FormValue("method")
 	paramType := ctx.FormValue("parameterTypesString")
@@ -122,20 +117,29 @@ func (this *Consumer) fastInvoke(ctx *fasthttp.RequestCtx) {
 	inv.Method = util.BytesToString(method)
 	inv.ParamType = util.BytesToString(paramType)
 	inv.Param = util.BytesToString(param)
-	// TODO retry,会影响性能
-	endpoint := this.Elect()
-	//log.Debug("status:", util.ToJsonStr(endpoint.Meter))
-	//start := time.Now()
-	data, err := this.Invoke(endpoint.Endpoint, inv)
-	//end := time.Now()
-	//this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()), err)
-	//this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
+
+	data, err := this.invoke(inv)
+
 	if err != nil {
 		ctx.SetStatusCode(http.StatusInternalServerError)
 	} else {
 		ctx.SetStatusCode(http.StatusOK)
 		ctx.Write(data)
 	}
+}
+
+func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
+	// TODO retry,会影响性能
+	endpoint := this.Elect()
+	atomic.AddInt32(&endpoint.Active, 1)
+	defer atomic.AddInt32(&endpoint.Active, -1)
+	//log.Debug("status:", util.ToJsonStr(endpoint.Meter))
+	//start := time.Now()
+	data, err := this.Invoke(endpoint.Endpoint, inv)
+	//end := time.Now()
+	//this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()), err)
+	//this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
+	return data, err
 }
 
 func (this *Consumer) syncRecord(endpoint *Endpoint, nano uint64, err error) {
@@ -180,11 +184,9 @@ func (this *Consumer) asyncRecord() {
 
 }
 
-// 负载均衡，选择其中一个
-// TODO 优化策略
 func (this *Consumer) Elect() *Endpoint {
 	if len(this.endpoints) == 1 {
 		return this.endpoints[0]
 	}
-	return this.Elector.Elect(this.endpoints)
+	return this.Balancer.Elect(this.endpoints)
 }
