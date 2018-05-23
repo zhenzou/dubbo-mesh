@@ -59,13 +59,13 @@ type Rtt struct {
 }
 
 type Meter struct {
-	TotalCount uint64 // 处理的总数
-	ErrorCount uint64 // 错误数
-	Error      uint64 // 大于0，最近n次错误，=0 最近一次没有错误
-	Latest     uint64 // RTT
-	Max        uint64
-	Min        uint64
-	Total      uint64
+	TotalCount uint64 `json:"total_count,omitempty"` // 处理的总数
+	ErrorCount uint64 `json:"error_count,omitempty"` // 错误数
+	Error      uint64 `json:"error,omitempty"`       // 大于0，最近n次错误，=0 最近一次没有错误
+	Latest     uint64 `json:"latest,omitempty"`      // RTT
+	Max        uint64 `json:"max,omitempty"`
+	Min        uint64 `json:"min,omitempty"`
+	Total      uint64 `json:"total,omitempty"`
 }
 
 // 平均RTT

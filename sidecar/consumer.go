@@ -134,7 +134,7 @@ func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
 	endpoint := this.Elect()
 	atomic.AddInt32(&endpoint.Active, 1)
 	defer atomic.AddInt32(&endpoint.Active, -1)
-	log.Debug("status:", util.ToJsonStr(endpoint.Meter))
+	log.Debug(util.ToJsonStr(endpoint))
 	start := time.Now()
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	end := time.Now()

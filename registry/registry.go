@@ -16,9 +16,9 @@ type System struct {
 }
 
 type Endpoint struct {
-	Host   string
-	Port   int
-	System *System
+	Host   string  `json:"host"`
+	Port   int     `json:"-"`
+	System *System `json:"-"`
 }
 
 func (this *Endpoint) String() string {
