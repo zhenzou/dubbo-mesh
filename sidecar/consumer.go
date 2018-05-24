@@ -2,7 +2,6 @@ package sidecar
 
 import (
 	"sync/atomic"
-	"time"
 	"net/http"
 	"sync"
 	"errors"
@@ -127,18 +126,6 @@ func (this *Consumer) fastHandler(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(http.StatusOK)
 		ctx.Write(data)
 	}
-}
-
-func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
-	// TODO retry,会影响性能
-	endpoint := this.Elect()
-	atomic.AddInt32(&endpoint.Active, 1)
-	defer atomic.AddInt32(&endpoint.Active, -1)
-	start := time.Now()
-	data, err := this.Invoke(endpoint.Endpoint, inv)
-	end := time.Now()
-	this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
-	return data, err
 }
 
 func (this *Consumer) syncRecord(endpoint *Endpoint, nano uint64, err error) {
