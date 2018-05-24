@@ -8,7 +8,7 @@ echo ETCD_URL = ${ETCD_URL}
 
 if [[ "$1" == "consumer" ]]; then
   echo "Starting consumer agent..."
-  /root/dists/consumer -e=${ETCD_URL}
+  GOGC=400 /root/dists/consumer -e=${ETCD_URL}
 elif [[ "$1" == "provider-small" ]]; then
   echo "Starting small provider agent..."
   /root/dists/provider -m=2048 -n=provider-small -p=30000 -dp=20880 -e=${ETCD_URL}
