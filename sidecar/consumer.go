@@ -82,7 +82,7 @@ func (this *Consumer) init() error {
 		this.endpoints[i] = NewEndpoint(endpoint)
 	}
 	this.Balancer.Init(this.endpoints)
-	//go this.asyncRecord()
+	go this.asyncRecord()
 	return nil
 }
 
@@ -134,12 +134,10 @@ func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
 	endpoint := this.Elect()
 	atomic.AddInt32(&endpoint.Active, 1)
 	defer atomic.AddInt32(&endpoint.Active, -1)
-	log.Debug(util.ToJsonStr(endpoint))
 	start := time.Now()
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	end := time.Now()
-	this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()), err)
-	//this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
+	this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
 	return data, err
 }
 
@@ -183,6 +181,16 @@ func (this *Consumer) asyncRecord() {
 		}
 	}
 
+}
+
+func (this *Consumer) Shutdown() error {
+	for _, endpoint := range this.endpoints {
+		m, _ := util.ToMap(endpoint, "json")
+		m["avg"] = endpoint.Meter.Avg()
+		m["rate"] = endpoint.Meter.Rate()
+		log.Info(util.ToJsonStr(m))
+	}
+	return this.Server.Shutdown()
 }
 
 func (this *Consumer) Elect() *Endpoint {
