@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"dubbo-mesh/registry"
+	"dubbo-mesh/util"
 )
 
 const (
@@ -50,6 +51,16 @@ type Endpoint struct {
 	good        bool
 	curWeight   int
 	originWight int
+}
+
+func (this *Endpoint) String() string {
+	m := map[string]interface{}{}
+	m["host"] = this.Host
+	m["active"] = this.Active
+	m["avg"] = this.Meter.Avg()
+	m["rate"] = this.Meter.Rate()
+	m["meter"] = this.Meter
+	return util.ToJsonStr(m)
 }
 
 type Rtt struct {

@@ -6,8 +6,8 @@ import (
 
 type Process func(conn *Conn, request *Request) (resp *Response, err error)
 
-func NewClient(addr string) *Client {
-	client := &Client{pool: NewPool(100, addr)}
+func NewClient(addr string, size int) *Client {
+	client := &Client{pool: NewPool(size, addr)}
 	client.init()
 	return client
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"flag"
 
 	"dubbo-mesh/cmd"
 	"dubbo-mesh/log"
@@ -12,9 +13,12 @@ import (
 func main() {
 
 	var (
-		cfg    *sidecar.Config
-		server *sidecar.Provider
+		cfg      *sidecar.Config
+		server   *sidecar.Provider
+		poolSize int
 	)
+
+	flag.IntVar(&poolSize, "ps", 100, "conn pool size to dubbo provider")
 
 	cmd.Run(
 		func() error {
@@ -23,8 +27,9 @@ func main() {
 				ServerPort: cmd.Port,
 				Etcd:       cmd.Etcd,
 				Service:    cmd.Service,
+				PoolSize:   poolSize,
 			}
-			log.Debug("cfg:", util.ToJsonStr(cfg))
+			log.Info("cfg:", util.ToJsonStr(cfg))
 			return nil
 		},
 		func() error {

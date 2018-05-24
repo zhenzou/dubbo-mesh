@@ -16,6 +16,7 @@ type Config struct {
 	Etcd       string
 	Balancer   int
 	Server     int
+	PoolSize   int
 }
 
 type Server interface {

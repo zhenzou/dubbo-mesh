@@ -159,36 +159,9 @@ func (this *Consumer) syncRecord(endpoint *Endpoint, nano uint64, err error) {
 	}
 }
 
-func (this *Consumer) asyncRecord() {
-	for rtt := range this.rtts {
-		endpoint := rtt.Endpoint
-		nano := uint64(rtt.Rtt)
-		err := rtt.Error
-		endpoint.Meter.TotalCount += 1
-		endpoint.Meter.Total += nano
-		endpoint.Meter.Latest = nano
-		if nano < endpoint.Meter.Min {
-			endpoint.Meter.Min = nano
-		}
-		if nano > endpoint.Meter.Max {
-			endpoint.Meter.Max = nano
-		}
-		if err != nil {
-			endpoint.Meter.ErrorCount += 1
-			endpoint.Meter.Error += 1
-		} else {
-			endpoint.Meter.Error = 0
-		}
-	}
-
-}
-
 func (this *Consumer) Shutdown() error {
 	for _, endpoint := range this.endpoints {
-		m, _ := util.ToMap(endpoint, "json")
-		m["avg"] = endpoint.Meter.Avg()
-		m["rate"] = endpoint.Meter.Rate()
-		log.Info(util.ToJsonStr(m))
+		log.Info(endpoint.String())
 	}
 	return this.Server.Shutdown()
 }
