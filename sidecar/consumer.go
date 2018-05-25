@@ -146,10 +146,14 @@ func (this *Consumer) syncRecord(endpoint *Endpoint, nano uint64, err error) {
 	}
 }
 
-func (this *Consumer) Shutdown() error {
+func (this *Consumer) printInfo() {
 	for _, endpoint := range this.endpoints {
 		log.Info(endpoint.String())
 	}
+}
+
+func (this *Consumer) Shutdown() error {
+	this.printInfo()
 	return this.Server.Shutdown()
 }
 

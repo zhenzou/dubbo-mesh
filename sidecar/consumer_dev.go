@@ -6,7 +6,6 @@ import (
 	"time"
 	"sync/atomic"
 
-	"dubbo-mesh/log"
 	"dubbo-mesh/mesh"
 )
 
@@ -33,7 +32,7 @@ func (this *Consumer) asyncRecord() {
 			endpoint.Meter.Error = 0
 		}
 		if count > 0 && count%10000 == 0 {
-			log.Info(rtt.Endpoint.String())
+			this.printInfo()
 		}
 	}
 }

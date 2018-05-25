@@ -29,7 +29,7 @@ func main() {
 				Service:    cmd.Service,
 				PoolSize:   poolSize,
 			}
-			log.Info("cfg:", util.ToJsonStr(cfg))
+			log.Info(util.ToJsonStr(cfg))
 			return nil
 		},
 		func() error {
