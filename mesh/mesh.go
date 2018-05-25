@@ -34,7 +34,6 @@ type Client interface {
 }
 
 type Server interface {
-	Invocations() <-chan Invocation
 	Run() error
 	Shutdown() error
 }

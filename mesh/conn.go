@@ -37,7 +37,6 @@ func (this *Pool) Get() (net.Conn, error) {
 	}
 }
 
-// TODO POOl
 func (this *Pool) Put(conn net.Conn) {
 	select {
 	case this.ch <- conn:

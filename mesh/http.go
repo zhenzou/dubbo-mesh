@@ -52,11 +52,6 @@ type HttpServer struct {
 	client *dubbo.Client
 }
 
-func (this *HttpServer) Invocations() <-chan Invocation {
-	// TODO
-	return nil
-}
-
 func (this *HttpServer) Run() error {
 	log.Info("server start to run on port ", this.port)
 	this.Server = &http.Server{
@@ -79,7 +74,6 @@ func (this *HttpServer) invoke(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
 		//w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		log.Debug("resp:", string(resp.Body()))
 		w.Write(resp.Body())
 	}
 }

@@ -83,10 +83,6 @@ type KcpServer struct {
 	client   *dubbo.Client
 }
 
-func (this *KcpServer) Invocations() <-chan Invocation {
-	panic("implement me")
-}
-
 func (this *KcpServer) Run() error {
 	listener, err := kcp.Listen(this.addr)
 	if err != nil {

@@ -75,7 +75,7 @@ func (this *Consumer) init() error {
 	if err != nil {
 		return err
 	}
-	log.Info("get service:", util.ToJsonStr(endpoints))
+	log.Info("get providers:", util.ToJsonStr(endpoints))
 	this.endpoints = make([]*Endpoint, len(endpoints))
 	for i, endpoint := range endpoints {
 		this.endpoints[i] = NewEndpoint(endpoint)

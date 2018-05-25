@@ -76,10 +76,6 @@ type TcpServer struct {
 	client   *dubbo.Client
 }
 
-func (this *TcpServer) Invocations() <-chan Invocation {
-	panic("implement me")
-}
-
 func (this *TcpServer) Run() error {
 	listener, err := net.Listen("tcp", this.addr)
 	if err != nil {
@@ -103,9 +99,9 @@ func (this *TcpServer) Run() error {
 
 func (this *TcpServer) handle(conn net.Conn) error {
 	buf := make([]byte, 2048)
-	l := make([]byte, 4)
+	lengthBuf := make([]byte, 4)
 	for {
-		_, err := conn.Read(l)
+		_, err := conn.Read(lengthBuf)
 		if err == io.EOF {
 			err = nil
 			break
@@ -114,7 +110,7 @@ func (this *TcpServer) handle(conn net.Conn) error {
 			log.Warn(err.Error())
 			continue
 		}
-		length := util.Bytes2Int(l)
+		length := util.Bytes2Int(lengthBuf)
 		buf := buf[:length]
 		_, err = conn.Read(buf)
 		if err != nil {

@@ -17,7 +17,12 @@ var (
 	ParamSeparator         = []byte("\n")
 )
 
+const (
+	BufSize = 4096
+)
+
 // TODO 心跳
+// 每次只会被一个goroutine获取，不会有并发问题
 type Conn struct {
 	net.Conn
 	send bool
@@ -65,7 +70,7 @@ func (this *Conn) ReadResponse() (resp *Response, err error) {
 	}
 	length := header.DataLen()
 	var data []byte
-	if length > 8192 {
+	if length > BufSize {
 		data = make([]byte, length)
 	} else {
 		data = this.buf[:length]
@@ -89,9 +94,9 @@ func (this *Conn) HeartBeat(header Header) (err error) {
 	return err
 }
 
-func NewPool(max int, dubboAddr string) *Pool {
-	log.Debug("dubboAddr ", dubboAddr)
-	pool := &Pool{addr: dubboAddr, ch: make(chan *Conn, max)}
+func NewPool(max int, dubbo string) *Pool {
+	log.Info("dubbo", dubbo)
+	pool := &Pool{addr: dubbo, ch: make(chan *Conn, max)}
 	return pool
 }
 
@@ -107,7 +112,7 @@ func (this *Pool) new() (*Conn, error) {
 	}
 	log.Info("new ", conn.LocalAddr())
 
-	return &Conn{Conn: conn, buf: make([]byte, 8192)}, nil
+	return &Conn{Conn: conn, buf: make([]byte, BufSize)}, nil
 }
 
 func (this *Pool) Get() (*Conn, error) {
