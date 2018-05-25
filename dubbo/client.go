@@ -57,7 +57,6 @@ func (this *Client) closeConn(conn *Conn) {
 	this.pool.Put(conn)
 }
 
-// TODO Retry
 func (this *Client) defaultProcess(conn *Conn, request *Request) (resp *Response, err error) {
 	err = conn.WriteRequest(request)
 	if err != nil {
