@@ -7,7 +7,6 @@ import (
 	"dubbo-mesh/log"
 )
 
-// TODO 解决动态变化
 type RoundRobin struct {
 	index int32
 	total int32

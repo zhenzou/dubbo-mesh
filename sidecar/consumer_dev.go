@@ -38,7 +38,7 @@ func (this *Consumer) asyncRecord() {
 }
 
 func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
-	// TODO retry,会影响性能
+	// TODO retry.会影响性能
 	endpoint := this.Elect()
 	atomic.AddInt32(&endpoint.Active, 1)
 	defer atomic.AddInt32(&endpoint.Active, -1)
