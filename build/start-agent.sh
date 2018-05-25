@@ -6,7 +6,7 @@ ETCD_URL=http://${ETCD_HOST}:${ETCD_PORT}
 
 echo ETCD_URL = ${ETCD_URL}
 
-export GOGC=500
+export GOGC=400
 #export GODEBUG=gctrace=1do
 
 if [[ "$1" == "consumer" ]]; then

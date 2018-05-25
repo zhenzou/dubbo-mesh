@@ -27,7 +27,7 @@ func main() {
 				Balancer:   sidecar.LB_WRR,
 				Server:     1,
 			}
-			log.Debug("cfg:", util.ToJsonStr(cfg))
+			log.Info("cfg:", util.ToJsonStr(cfg))
 			return nil
 		},
 		func() error {
