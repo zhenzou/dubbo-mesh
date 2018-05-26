@@ -14,10 +14,10 @@ if [[ "$1" == "consumer" ]]; then
   /root/dists/consumer -e=${ETCD_URL}
 elif [[ "$1" == "provider-small" ]]; then
   echo "Starting small provider agent..."
-  /root/dists/provider -m=1 -ps=150 -n=provider-small -p=30000 -dp=20880 -e=${ETCD_URL}
+  /root/dists/provider -m=1 -ps=100 -n=provider-small -p=30000 -dp=20880 -e=${ETCD_URL}
 elif [[ "$1" == "provider-medium" ]]; then
   echo "Starting medium provider agent..."
-  /root/dists/provider -m=3 -ps=200 -n=provider-medium -p=30000 -dp=20880 -e=${ETCD_URL}
+  /root/dists/provider -m=3 -ps=150 -n=provider-medium -p=30000 -dp=20880 -e=${ETCD_URL}
 elif [[ "$1" == "provider-large" ]]; then
   echo "Starting large provider agent..."
   /root/dists/provider -m=4 -ps=200 -n=provider-large -p=30000 -dp=20880  -e=${ETCD_URL}

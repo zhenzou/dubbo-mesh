@@ -18,7 +18,7 @@ var (
 )
 
 const (
-	BufSize = 4096
+	BufSize = 8192
 )
 
 // TODO 心跳
