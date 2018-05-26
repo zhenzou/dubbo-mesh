@@ -5,6 +5,7 @@ import (
 	"errors"
 	"context"
 	"time"
+	"sync/atomic"
 
 	"dubbo-mesh/log"
 	"dubbo-mesh/derror"
@@ -52,7 +53,7 @@ func (this *Conn) WriteRequest(req *Request) (err error) {
 }
 
 func (this *Conn) Close() (err error) {
-	log.Info("close ", this.LocalAddr())
+	log.Info("close ", this.RemoteAddr())
 	return this.Conn.Close()
 }
 
@@ -101,17 +102,19 @@ func NewPool(max int, dubbo string) *Pool {
 }
 
 type Pool struct {
-	addr string
-	ch   chan *Conn
+	addr  string
+	count uint32
+	ch    chan *Conn
 }
 
 func (this *Pool) new() (*Conn, error) {
 	conn, err := net.Dial("tcp", this.addr)
+
 	if err != nil {
 		return nil, err
 	}
-	log.Info("new ", conn.LocalAddr())
-
+	atomic.AddUint32(&this.count, 1)
+	log.Infof("new %d,%s", this.count, conn.RemoteAddr())
 	return &Conn{Conn: conn, buf: make([]byte, BufSize)}, nil
 }
 

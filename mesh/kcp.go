@@ -30,13 +30,7 @@ type KcpClient struct {
 
 func (this *KcpClient) newPool(addr string) *Pool {
 	return NewPool(200, func() (net.Conn, error) {
-		conn, err := kcp.Dial(addr)
-		if err != nil {
-			return nil, err
-		}
-		log.Info("new ", conn.LocalAddr())
-
-		return conn, nil
+		return kcp.Dial(addr)
 	})
 }
 

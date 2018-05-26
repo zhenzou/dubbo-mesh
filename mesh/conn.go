@@ -5,6 +5,7 @@ import (
 	"time"
 	"context"
 	"errors"
+	"sync/atomic"
 
 	"dubbo-mesh/derror"
 	"dubbo-mesh/log"
@@ -20,9 +21,10 @@ func NewPool(max int, new func() (net.Conn, error)) *Pool {
 }
 
 type Pool struct {
-	addr string
-	ch   chan net.Conn
-	New  func() (net.Conn, error)
+	addr  string
+	ch    chan net.Conn
+	count uint32
+	New   func() (net.Conn, error)
 }
 
 func (this *Pool) Get() (net.Conn, error) {
@@ -33,7 +35,12 @@ func (this *Pool) Get() (net.Conn, error) {
 		}
 		return conn, nil
 	default:
-		return this.New()
+		atomic.AddUint32(&this.count, 1)
+		conn, err := this.New()
+		if err == nil {
+			log.Infof("new %d %s", this.count, conn.RemoteAddr())
+		}
+		return conn, err
 	}
 }
 
@@ -41,7 +48,7 @@ func (this *Pool) Put(conn net.Conn) {
 	select {
 	case this.ch <- conn:
 	default:
-		log.Info("close:", conn.LocalAddr())
+		log.Info("close:", conn.RemoteAddr())
 		conn.Close()
 	}
 }
