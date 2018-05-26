@@ -9,13 +9,14 @@ import (
 )
 
 const (
-	LB_Random  = iota
+	LB_Random   = iota
 	LB_RR
 	LB_WRR
 	LB_LLatest
 	LB_LAvg
 	LB_LActive
 	LB_DRR
+	LB_WLActive
 )
 
 func lb(elector int) Banlancer {
@@ -34,6 +35,8 @@ func lb(elector int) Banlancer {
 		return &DynamicWeightRoundRobin{}
 	case LB_LActive:
 		return &LeastActive{}
+	case LB_WLActive:
+		return &WeightLeastActive{}
 	default:
 		panic(errors.New("unknown load balancer"))
 	}

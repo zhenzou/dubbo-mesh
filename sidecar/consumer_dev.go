@@ -41,9 +41,9 @@ func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
 	// TODO retry.会影响性能
 	endpoint := this.Elect()
 	atomic.AddInt32(&endpoint.Active, 1)
-	defer atomic.AddInt32(&endpoint.Active, -1)
 	start := time.Now()
 	data, err := this.Invoke(endpoint.Endpoint, inv)
+	atomic.AddInt32(&endpoint.Active, -1)
 	end := time.Now()
 	this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
 	return data, err
