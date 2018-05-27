@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 echo "clean provider-small"
 docker stop provider-small
 docker rm provider-small

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 echo "restart provider-small"
 docker restart provider-small
 echo "restart provider-medium"
