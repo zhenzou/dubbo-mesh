@@ -45,6 +45,6 @@ func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	atomic.AddInt32(&endpoint.Active, -1)
 	end := time.Now()
-	this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds(), Error: err}
+	this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds() / 1000000, Error: err}
 	return data, err
 }

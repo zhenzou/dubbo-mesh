@@ -19,3 +19,7 @@ func WaitForExitSign() {
 func Sleep(n int) {
 	time.Sleep(time.Duration(n) * time.Second)
 }
+
+func Millisecond() int64 {
+	return time.Now().UnixNano() / 1000000
+}
