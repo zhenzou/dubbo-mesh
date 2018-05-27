@@ -45,7 +45,10 @@ func (this *TcpClient) Invoke(endpoint *registry.Endpoint, inv *Invocation) ([]b
 		}
 		this.Unlock()
 	}
-	conn, _ := pool.Get()
+	conn, err := pool.Get()
+	if err != nil {
+		return nil, err
+	}
 	data := inv.Data()
 	conn.Write(util.Int2Bytes(len(data)))
 	conn.Write(data)

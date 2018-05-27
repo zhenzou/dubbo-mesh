@@ -113,8 +113,8 @@ func (this *Pool) new() (*Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	atomic.AddUint32(&this.count, 1)
-	log.Infof("new %d,%s", this.count, conn.RemoteAddr())
+	count := atomic.AddUint32(&this.count, 1)
+	log.Infof("new %d,%s", count, conn.RemoteAddr())
 	return &Conn{Conn: conn, buf: make([]byte, BufSize)}, nil
 }
 

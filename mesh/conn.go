@@ -35,10 +35,10 @@ func (this *Pool) Get() (net.Conn, error) {
 		}
 		return conn, nil
 	default:
-		atomic.AddUint32(&this.count, 1)
+		count := atomic.AddUint32(&this.count, 1)
 		conn, err := this.New()
 		if err == nil {
-			log.Infof("new %d %s", this.count, conn.RemoteAddr())
+			log.Infof("new %d %s", count, conn.RemoteAddr())
 		}
 		return conn, err
 	}

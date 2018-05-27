@@ -100,6 +100,7 @@ func (this *Consumer) httpHandler(w http.ResponseWriter, req *http.Request) {
 	data, err := this.invoke(inv)
 
 	if err != nil {
+		log.Warn(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
 		w.Write(data)
