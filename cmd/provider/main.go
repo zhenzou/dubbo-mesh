@@ -8,6 +8,7 @@ import (
 	"dubbo-mesh/log"
 	"dubbo-mesh/sidecar"
 	"dubbo-mesh/util"
+	"dubbo-mesh/derror"
 )
 
 func main() {
@@ -40,8 +41,9 @@ func main() {
 			return nil
 		},
 		func() error {
-			server.Shutdown()
-
+			if server != nil {
+				derror.Panic(server.Shutdown())
+			}
 			return nil
 		},
 	)

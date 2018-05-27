@@ -15,7 +15,6 @@ const (
 	LB_LLatest
 	LB_LAvg
 	LB_LActive
-	LB_DRR
 	LB_WLActive
 )
 
@@ -31,8 +30,6 @@ func lb(elector int) Banlancer {
 		return &LeastLatest{}
 	case LB_LAvg:
 		return &LeastAVG{}
-	case LB_DRR:
-		return &DynamicWeightRoundRobin{}
 	case LB_LActive:
 		return &LeastActive{}
 	case LB_WLActive:
@@ -49,11 +46,8 @@ type Banlancer interface {
 
 type Endpoint struct {
 	*registry.Endpoint
-	Meter       *Meter
-	Active      int32
-	good        bool
-	curWeight   int
-	originWight int
+	Meter  *Meter
+	Active int32
 }
 
 func (this *Endpoint) String() string {

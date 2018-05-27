@@ -43,7 +43,6 @@ func (this *WeightRoundRobin) Init(endpoints []*Endpoint) {
 	gcd := this.weightGcd()
 	for k, weight := range this.weights {
 		max := weight / gcd
-		k.originWight = max
 		this.weights[k] = max
 		if max > this.max {
 			this.max = max
