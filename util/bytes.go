@@ -11,7 +11,7 @@ func Int2Bytes(i int) []byte {
 }
 
 func Int64ToBytes(i int64) []byte {
-	data := make([]byte, 5)
+	data := make([]byte, 8)
 	binary.BigEndian.PutUint64(data, uint64(i))
 	return data
 }
