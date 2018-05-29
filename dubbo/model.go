@@ -4,12 +4,18 @@ import (
 	"sync/atomic"
 	"errors"
 	"bytes"
+	"sync"
 
 	"dubbo-mesh/util"
 )
 
 var (
 	nextId int64
+	reqs   = sync.Pool{
+		New: func() interface{} {
+			return &Request{}
+		},
+	}
 )
 
 const (
@@ -39,16 +45,20 @@ type Request struct {
 
 func NewRequest(version, interfaceName, method, paramType string, data interface{}) *Request {
 	id := atomic.AddInt64(&nextId, 1)
-	return &Request{
-		DubboVersion: "2.6.0",
-		Version:      version,
-		Id:           id,
-		Interface:    interfaceName,
-		Method:       method,
-		TwoWay:       true,
-		ParamType:    paramType,
-		Data:         data,
-	}
+	req := reqs.Get().(*Request)
+	req.DubboVersion = "2.6.0"
+	req.Version = version
+	req.Id = id
+	req.Interface = interfaceName
+	req.Method = method
+	req.TwoWay = true
+	req.ParamType = paramType
+	req.Data = data
+	return req
+}
+
+func ReleaseRequest(req *Request) {
+	reqs.Put(req)
 }
 
 func NewResponse(status int, id int64, data []byte) *Response {

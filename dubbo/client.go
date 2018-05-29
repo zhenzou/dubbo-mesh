@@ -1,6 +1,8 @@
 package dubbo
 
 import (
+	"sync"
+
 	"dubbo-mesh/json"
 )
 
@@ -12,6 +14,14 @@ func NewClient(addr string, size int) *Client {
 	return client
 }
 
+var (
+	invs = sync.Pool{
+		New: func() interface{} {
+			return &Invocation{}
+		},
+	}
+)
+
 type Client struct {
 	pool    *Pool
 	process Process
@@ -22,16 +32,16 @@ func (this *Client) init() {
 }
 
 func (this *Client) Invoke(interfaceName, method, paramType, param string) (resp *Response, err error) {
-	data, _ := json.Marshal(param)
 
-	invocation := Invocation{
-		Attach:    map[string]interface{}{"path": interfaceName, "dubbo": "2.0.1"},
-		Method:    method,
-		ParamType: paramType,
-		Args:      data,
-	}
+	invocation := invs.Get().(*Invocation)
+	invocation.Attach = map[string]interface{}{"path": interfaceName, "dubbo": "2.0.1"}
+	invocation.Method = method
+	invocation.ParamType = paramType
+	invocation.Args, _ = json.Marshal(param)
 
-	req := NewRequest("2.0.0", interfaceName, method, paramType, &invocation)
+	req := NewRequest("2.0.0", interfaceName, method, paramType, invocation)
+	defer invs.Put(invocation)
+	defer ReleaseRequest(req)
 
 	conn := this.getConn()
 	resp, err = this.process(conn, req)

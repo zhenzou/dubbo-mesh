@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 
 	"dubbo-mesh/json"
+	"dubbo-mesh/util"
 )
 
 func EncodeInt16(encode []byte, i int16, offset ...int) []byte {
@@ -22,14 +23,8 @@ func EncodeInt64(encode []byte, i int64, offset ...int) []byte {
 	if len(offset) > 0 {
 		off = offset[0]
 	}
-	encode[off+7] = byte(i)
-	encode[off+6] = byte(i >> 8)
-	encode[off+5] = byte(i >> 16)
-	encode[off+4] = byte(i >> 24)
-	encode[off+3] = byte(i >> 32)
-	encode[off+2] = byte(i >> 40)
-	encode[off+1] = byte(i >> 48)
-	encode[off+0] = byte(i >> 56)
+	bs := util.Int64ToBytes(i)
+	copy(encode[off:], bs)
 	return encode
 }
 
@@ -38,10 +33,8 @@ func EncodeInt(encode []byte, i int, offset ...int) []byte {
 	if len(offset) > 0 {
 		off = offset[0]
 	}
-	encode[off+3] = byte(i)
-	encode[off+2] = byte(i >> 8)
-	encode[off+1] = byte(i >> 16)
-	encode[off+0] = byte(i >> 24)
+	bs := util.Int2Bytes(i)
+	copy(encode[off:], bs)
 	return encode
 }
 
