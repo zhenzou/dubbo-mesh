@@ -124,32 +124,26 @@ func (this *Consumer) fastHandler(ctx *fasthttp.RequestCtx) {
 	}
 }
 
-func (this *Consumer) syncRecord(endpoint *Endpoint, nano uint64, err error) {
-	atomic.AddUint64(&endpoint.Meter.TotalCount, 1)
-	atomic.AddUint64(&endpoint.Meter.Total, nano)
-	atomic.StoreUint64(&endpoint.Meter.Latest, nano)
-	if nano < endpoint.Meter.Min {
-		atomic.StoreUint64(&endpoint.Meter.Min, nano)
+func (this *Consumer) syncRecord(endpoint *Endpoint, mill uint64) {
+	atomic.AddUint64(&endpoint.Meter.Count, 1)
+	atomic.AddUint64(&endpoint.Meter.Total, mill)
+	atomic.StoreUint64(&endpoint.Meter.Latest, mill)
+	if mill < endpoint.Meter.Min {
+		atomic.StoreUint64(&endpoint.Meter.Min, mill)
 	}
-	if nano > endpoint.Meter.Max {
-		atomic.StoreUint64(&endpoint.Meter.Max, nano)
-	}
-	if err != nil {
-		atomic.AddUint64(&endpoint.Meter.ErrorCount, 1)
-		atomic.AddUint64(&endpoint.Meter.Error, 1)
-	} else {
-		atomic.StoreUint64(&endpoint.Meter.Error, 0)
+	if mill > endpoint.Meter.Max {
+		atomic.StoreUint64(&endpoint.Meter.Max, mill)
 	}
 }
 
-func (this *Consumer) printInfo() {
+func (this *Consumer) print() {
 	for _, endpoint := range this.endpoints {
 		log.Info(endpoint.String())
 	}
 }
 
 func (this *Consumer) Shutdown() error {
-	this.printInfo()
+	this.print()
 	return this.Server.Shutdown()
 }
 

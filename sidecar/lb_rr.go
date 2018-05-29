@@ -51,7 +51,6 @@ func (this *WeightRoundRobin) Init(endpoints []*Endpoint) {
 }
 
 func (this *WeightRoundRobin) Elect(endpoints []*Endpoint) *Endpoint {
-
 	for {
 		this.index = (this.index + 1) % len(endpoints)
 		if this.index == 0 {
@@ -65,7 +64,6 @@ func (this *WeightRoundRobin) Elect(endpoints []*Endpoint) *Endpoint {
 			return end
 		}
 	}
-	return nil
 }
 
 func (r *WeightRoundRobin) weightGcd() int {

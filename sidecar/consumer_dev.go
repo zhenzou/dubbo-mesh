@@ -14,25 +14,18 @@ func (this *Consumer) asyncRecord() {
 	for rtt := range this.rtts {
 		count++
 		endpoint := rtt.Endpoint
-		nano := uint64(rtt.Rtt)
-		err := rtt.Error
-		endpoint.Meter.TotalCount += 1
-		endpoint.Meter.Total += nano
-		endpoint.Meter.Latest = nano
-		if nano < endpoint.Meter.Min {
-			endpoint.Meter.Min = nano
+		mill := uint64(rtt.Rtt)
+		endpoint.Meter.Count += 1
+		endpoint.Meter.Total += mill
+		endpoint.Meter.Latest = mill
+		if mill < endpoint.Meter.Min {
+			endpoint.Meter.Min = mill
 		}
-		if nano > endpoint.Meter.Max {
-			endpoint.Meter.Max = nano
-		}
-		if err != nil {
-			endpoint.Meter.ErrorCount += 1
-			endpoint.Meter.Error += 1
-		} else {
-			endpoint.Meter.Error = 0
+		if mill > endpoint.Meter.Max {
+			endpoint.Meter.Max = mill
 		}
 		if count > 0 && count%10000 == 0 {
-			this.printInfo()
+			this.print()
 		}
 	}
 }
@@ -45,6 +38,6 @@ func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	atomic.AddInt32(&endpoint.Active, -1)
 	end := time.Now()
-	this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds() / 1000000, Error: err}
+	this.rtts <- &Rtt{Endpoint: endpoint, Rtt: end.Sub(start).Nanoseconds() / 1000000}
 	return data, err
 }

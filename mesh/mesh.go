@@ -1,9 +1,10 @@
 package mesh
 
 import (
+	"sync"
+
 	"dubbo-mesh/registry"
 	"dubbo-mesh/json"
-	"sync"
 )
 
 type Protocol int

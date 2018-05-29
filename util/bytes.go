@@ -4,10 +4,13 @@ import (
 	"encoding/binary"
 )
 
-func Int2Bytes(i int) []byte {
-	data := make([]byte, 4)
-	binary.BigEndian.PutUint32(data, uint32(i))
-	return data
+func Int2Bytes(v int) []byte {
+	bs := make([]byte, 4)
+	bs[0] = byte(v >> 24)
+	bs[1] = byte(v >> 16)
+	bs[2] = byte(v >> 8)
+	bs[3] = byte(v)
+	return bs
 }
 
 func Int64ToBytes(i int64) []byte {
