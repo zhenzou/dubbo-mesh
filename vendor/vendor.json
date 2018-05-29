@@ -83,6 +83,13 @@
 			"revisionTime": "2018-02-21T22:46:20Z"
 		},
 		{
+			"checksumSHA1": "1TkTXey0szzAc6Io+FmB5SFjgVA=",
+			"path": "github.com/francoispqt/gojay",
+			"revision": "b8dc210cd231638e2cdf5b330e4050ceab664d0f",
+			"revisionTime": "2018-05-24T16:00:24Z",
+			"tree": true
+		},
+		{
 			"checksumSHA1": "+wLB7aMn3pHO6JmizmYJDn4dn2Y=",
 			"origin": "github.com/coreos/etcd/vendor/github.com/gogo/protobuf/gogoproto",
 			"path": "github.com/gogo/protobuf/gogoproto",

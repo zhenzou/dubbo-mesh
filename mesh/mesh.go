@@ -1,10 +1,9 @@
 package mesh
 
 import (
-	"bytes"
-
 	"dubbo-mesh/registry"
-	"dubbo-mesh/util"
+	"dubbo-mesh/json"
+	"sync"
 )
 
 type Protocol int
@@ -15,6 +14,22 @@ const (
 	Kcp
 )
 
+var (
+	invs = sync.Pool{
+		New: func() interface{} {
+			return &Invocation{}
+		},
+	}
+)
+
+func NewInv() *Invocation {
+	return invs.Get().(*Invocation)
+}
+
+func ReleaseInv(inv *Invocation) {
+	invs.Put(inv)
+}
+
 //  暂时只考虑Dubbo协议
 type Invocation struct {
 	Interface string `json:"i"`
@@ -24,8 +39,7 @@ type Invocation struct {
 }
 
 func (this *Invocation) Data() []byte {
-	data := bytes.Join([][]byte{util.StringToBytes(this.Interface), util.StringToBytes(this.Method),
-		util.StringToBytes(this.ParamType), util.StringToBytes(this.Param)}, []byte("\n"))
+	data, _ := json.Marshal(this)
 	return data
 }
 

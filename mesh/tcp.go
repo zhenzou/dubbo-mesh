@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"sync"
 	"strings"
-	"bytes"
 	"io"
 
 	"dubbo-mesh/log"
 	"dubbo-mesh/registry"
 	"dubbo-mesh/dubbo"
 	"dubbo-mesh/util"
+	"dubbo-mesh/json"
 )
 
 func NewTcpClient() Client {
@@ -112,11 +112,15 @@ func (this *TcpServer) handle(conn net.Conn) error {
 		_, err = conn.Read(buf)
 		if err != nil {
 			log.Warn(err.Error())
+			conn.Write(ErrorResp)
 			break
 		}
-		split := bytes.Split(buf, []byte("\n"))
 
-		resp, err := this.client.Invoke(util.BytesToString(split[0]), util.BytesToString(split[1]), util.BytesToString(split[2]), util.BytesToString(split[3]))
+		inv := NewInv()
+		// 忽略错误处理
+		json.Unmarshal(buf, inv)
+
+		resp, err := this.client.Invoke(inv.Interface, inv.Method, inv.ParamType, inv.Param)
 		if err != nil {
 			log.Warn(err.Error())
 			conn.Write(ErrorResp)

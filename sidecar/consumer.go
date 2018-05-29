@@ -3,7 +3,6 @@ package sidecar
 import (
 	"sync/atomic"
 	"net/http"
-	"sync"
 	"errors"
 
 	"github.com/valyala/fasthttp"
@@ -52,14 +51,6 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 	return consumer
 }
 
-var (
-	invPool = sync.Pool{
-		New: func() interface{} {
-			return &mesh.Invocation{}
-		},
-	}
-)
-
 type Consumer struct {
 	Server
 	mesh.Client
@@ -90,8 +81,10 @@ func (this *Consumer) httpHandler(w http.ResponseWriter, req *http.Request) {
 	method := req.FormValue("method")
 	paramType := req.FormValue("parameterTypesString")
 	param := req.FormValue("parameter")
-	inv := invPool.Get().(*mesh.Invocation)
-	defer invPool.Put(inv)
+
+	inv := mesh.NewInv()
+	defer mesh.ReleaseInv(inv)
+
 	inv.Interface = interfaceName
 	inv.Method = method
 	inv.ParamType = paramType
@@ -112,8 +105,10 @@ func (this *Consumer) fastHandler(ctx *fasthttp.RequestCtx) {
 	method := ctx.FormValue("method")
 	paramType := ctx.FormValue("parameterTypesString")
 	param := ctx.FormValue("parameter")
-	inv := invPool.Get().(*mesh.Invocation)
-	defer invPool.Put(inv)
+
+	inv := mesh.NewInv()
+	defer mesh.ReleaseInv(inv)
+
 	inv.Interface = util.BytesToString(interfaceName)
 	inv.Method = util.BytesToString(method)
 	inv.ParamType = util.BytesToString(paramType)
