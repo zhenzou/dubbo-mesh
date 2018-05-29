@@ -1,4 +1,5 @@
 // +build !jsoniter
+// +build !gojay
 
 package json
 
