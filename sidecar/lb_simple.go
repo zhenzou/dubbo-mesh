@@ -104,7 +104,7 @@ func (this *WeightLeastActive) calculateWrr(status *Endpoint) int32 {
 
 func (this *WeightLeastActive) weight(endpoint *Endpoint) int32 {
 
-	return endpoint.Active / this.weights[endpoint] * int32(endpoint.Meter.Avg())
+	return endpoint.Active / this.weights[endpoint] * int32(endpoint.Meter.Latest)
 }
 
 func (this *WeightLeastActive) Elect(endpoints []*Endpoint) *Endpoint {
