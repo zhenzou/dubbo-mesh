@@ -127,13 +127,13 @@ func (this *Consumer) fastHandler(ctx *fasthttp.RequestCtx) {
 func (this *Consumer) syncRecord(endpoint *Endpoint, mill uint64) {
 	atomic.AddUint64(&endpoint.Meter.Count, 1)
 	atomic.AddUint64(&endpoint.Meter.Total, mill)
-	atomic.StoreUint64(&endpoint.Meter.Latest, mill)
-	if mill < endpoint.Meter.Min {
-		atomic.StoreUint64(&endpoint.Meter.Min, mill)
-	}
-	if mill > endpoint.Meter.Max {
-		atomic.StoreUint64(&endpoint.Meter.Max, mill)
-	}
+	//atomic.StoreUint64(&endpoint.Meter.Latest, mill)
+	//if mill < endpoint.Meter.Min {
+	//	atomic.StoreUint64(&endpoint.Meter.Min, mill)
+	//}
+	//if mill > endpoint.Meter.Max {
+	//	atomic.StoreUint64(&endpoint.Meter.Max, mill)
+	//}
 }
 
 func (this *Consumer) print() {
