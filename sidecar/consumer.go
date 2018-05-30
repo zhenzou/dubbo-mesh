@@ -4,6 +4,7 @@ import (
 	"sync/atomic"
 	"net/http"
 	"errors"
+	"time"
 
 	"github.com/valyala/fasthttp"
 
@@ -72,7 +73,6 @@ func (this *Consumer) init() error {
 		this.endpoints[i] = NewEndpoint(endpoint)
 	}
 	this.Balancer.Init(this.endpoints)
-	go this.asyncRecord()
 	return nil
 }
 
@@ -122,6 +122,18 @@ func (this *Consumer) fastHandler(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(http.StatusOK)
 		ctx.Write(data)
 	}
+}
+
+func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
+	// TODO retry.会影响性能
+	endpoint := this.Elect()
+	atomic.AddInt32(&endpoint.Active, 1)
+	start := time.Now()
+	data, err := this.Invoke(endpoint.Endpoint, inv)
+	atomic.AddInt32(&endpoint.Active, -1)
+	end := time.Now()
+	this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()/1000000))
+	return data, err
 }
 
 func (this *Consumer) syncRecord(endpoint *Endpoint, mill uint64) {
