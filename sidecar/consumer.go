@@ -127,6 +127,7 @@ func (this *Consumer) fastHandler(ctx *fasthttp.RequestCtx) {
 func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
 	// TODO retry.会影响性能
 	endpoint := this.Elect()
+	log.Info(endpoint.String())
 	atomic.AddInt32(&endpoint.Active, 1)
 	start := time.Now()
 	data, err := this.Invoke(endpoint.Endpoint, inv)
