@@ -33,7 +33,7 @@ func (this *HttpClient) Invoke(endpoint *registry.Endpoint, invocation *Invocati
 	form.Add(ParamMethod, invocation.Method)
 	form.Add(ParamParamType, invocation.ParamType)
 	form.Add(ParamParam, invocation.Param)
-	resp, err := this.client.PostForm("http://"+endpoint.String(), form)
+	resp, err := this.client.PostForm("http://"+endpoint.Addr(), form)
 	if err != nil {
 		return nil, err
 	} else {

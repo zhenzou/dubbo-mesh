@@ -10,9 +10,8 @@ func DefaultMock() Registry {
 			Host: "127.0.0.1",
 			Port: 30001,
 			System: &System{
-				CpuNum:     2,
-				Memory:     80000,
-				UsedMemory: 0,
+				CpuNum: 2,
+				Memory: 80000,
 			},
 		},
 	})

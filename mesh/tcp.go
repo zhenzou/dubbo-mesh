@@ -40,7 +40,7 @@ func (this *TcpClient) Invoke(endpoint *registry.Endpoint, inv *Invocation) ([]b
 	if pool, ok = this.pool[endpoint]; !ok {
 		this.Lock()
 		if pool, ok = this.pool[endpoint]; !ok {
-			pool = this.newPool(endpoint.String())
+			pool = this.newPool(endpoint.Addr())
 			this.pool[endpoint] = pool
 		}
 		this.Unlock()

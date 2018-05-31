@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"runtime"
-	"strconv"
 	"strings"
 
 	etcd "github.com/coreos/etcd/clientv3"
@@ -93,19 +92,17 @@ func (this *Etcd) Find(serviceName string) (endpoints []*Endpoint, err error) {
 	for _, kv := range resp.Kvs {
 		key := string(kv.Key)
 		addr := strings.TrimPrefix(key, prefix)
-		split := strings.Split(addr, ":")
-		if len(split) != 2 {
-			log.Warn("get wrong service ", key)
-			continue
-		}
-		port, err := strconv.Atoi(split[1])
+
+		endpoint, err := NewEndpoint(addr)
+
 		if err != nil {
-			log.Warn("get wrong service ", key)
+			log.Warnf("wrong endpoint %s %s", key, addr)
 			continue
 		}
+
 		system := &System{}
 		json.Unmarshal(kv.Value, system)
-		endpoint := &Endpoint{Host: split[0], Port: port, System: system}
+		endpoint.System = system
 		endpoints = append(endpoints, endpoint)
 	}
 	return
