@@ -4,8 +4,8 @@ package retryer
 
 import (
 	"math"
-	"time"
 	"sync"
+	"time"
 
 	"dubbo-mesh/log"
 )

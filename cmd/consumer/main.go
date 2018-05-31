@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"dubbo-mesh/cmd"
+	"dubbo-mesh/derror"
 	"dubbo-mesh/log"
 	"dubbo-mesh/sidecar"
 	"dubbo-mesh/util"
-	"dubbo-mesh/derror"
 )
 
 func main() {

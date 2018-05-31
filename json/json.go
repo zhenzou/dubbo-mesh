@@ -17,6 +17,6 @@ var (
 )
 
 type (
-	Number = json.Number
+	Number     = json.Number
 	RawMessage = json.RawMessage
 )

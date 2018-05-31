@@ -3,14 +3,14 @@ package mesh
 import (
 	"sync"
 
-	"dubbo-mesh/registry"
 	"dubbo-mesh/json"
+	"dubbo-mesh/registry"
 )
 
 type Protocol int
 
 const (
-	Tcp  Protocol = iota + 1
+	Tcp Protocol = iota + 1
 	Http
 	Kcp
 )

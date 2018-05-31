@@ -1,18 +1,18 @@
 package registry
 
 import (
-	"fmt"
 	"context"
-	"strings"
-	"strconv"
+	"fmt"
 	"runtime"
+	"strconv"
+	"strings"
 
 	etcd "github.com/coreos/etcd/clientv3"
 
-	"dubbo-mesh/util"
-	"dubbo-mesh/log"
-	"dubbo-mesh/json"
 	"dubbo-mesh/cmd"
+	"dubbo-mesh/json"
+	"dubbo-mesh/log"
+	"dubbo-mesh/util"
 )
 
 func NewEtcdFromAddr(addr string) Registry {

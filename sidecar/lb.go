@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	LB_Random   = iota
+	LB_Random = iota
 	LB_RR
 	LB_WRR
 	LB_LLatest
@@ -46,14 +46,12 @@ type Banlancer interface {
 
 type Endpoint struct {
 	*registry.Endpoint
-	Meter  *Meter
-	Active int32
+	Meter *Meter
 }
 
 func (this *Endpoint) String() string {
 	m := map[string]interface{}{}
 	m["host"] = this.Host
-	m["active"] = this.Active
 	m["avg"] = this.Meter.Avg()
 	m["meter"] = this.Meter
 	return util.ToJsonStr(m)
@@ -65,8 +63,9 @@ type Rtt struct {
 }
 
 type Meter struct {
-	Count  uint64 `json:"total_count,omitempty"` // 处理的总数
-	Latest uint64 `json:"latest,omitempty"`      // RTT
+	Count  uint64 `json:"count,omitempty"`  // 已处理的总数
+	Active int32  `json:"active,omitempty"` // 当前连接数
+	Latest uint64 `json:"latest,omitempty"` // RTT
 	Max    uint64 `json:"max,omitempty"`
 	Min    uint64 `json:"min,omitempty"`
 	Total  uint64 `json:"total,omitempty"`

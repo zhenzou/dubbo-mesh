@@ -1,12 +1,12 @@
 package util
 
 import (
-	"net"
-	"net/http"
-	"io/ioutil"
-	"fmt"
 	"compress/gzip"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"net"
+	"net/http"
 )
 
 const LocalHost = "127.0.0.1"

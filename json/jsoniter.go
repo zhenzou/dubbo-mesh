@@ -22,6 +22,6 @@ var (
 )
 
 type (
-	Number = jsoniter.Number
+	Number     = jsoniter.Number
 	RawMessage = jsoniter.RawMessage
 )

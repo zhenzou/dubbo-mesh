@@ -3,8 +3,8 @@ package sidecar
 import (
 	"sync/atomic"
 
-	"dubbo-mesh/util"
 	"dubbo-mesh/log"
+	"dubbo-mesh/util"
 )
 
 type RoundRobin struct {

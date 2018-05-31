@@ -1,18 +1,18 @@
 package mesh
 
 import (
-	"net"
-	"fmt"
-	"sync"
-	"strings"
 	"bytes"
+	"fmt"
 	"io"
+	"net"
+	"strings"
+	"sync"
 
 	"github.com/xtaci/kcp-go"
 
+	"dubbo-mesh/dubbo"
 	"dubbo-mesh/log"
 	"dubbo-mesh/registry"
-	"dubbo-mesh/dubbo"
 	"dubbo-mesh/util"
 )
 

@@ -60,7 +60,7 @@ func (this *LeastActive) Elect(endpoints []*Endpoint) *Endpoint {
 	var result *Endpoint
 	var min int32 = math.MaxInt32
 	for _, endpoint := range endpoints {
-		if act := endpoint.Active; act < min {
+		if act := endpoint.Meter.Active; act < min {
 			min = act
 			result = endpoint
 		}

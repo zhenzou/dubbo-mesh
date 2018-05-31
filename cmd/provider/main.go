@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"flag"
+	"fmt"
 
 	"dubbo-mesh/cmd"
+	"dubbo-mesh/derror"
 	"dubbo-mesh/log"
 	"dubbo-mesh/sidecar"
 	"dubbo-mesh/util"
-	"dubbo-mesh/derror"
 )
 
 func main() {

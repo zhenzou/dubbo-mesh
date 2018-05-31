@@ -1,10 +1,10 @@
 package sidecar
 
 import (
-	"net/http"
-	"fmt"
-	"time"
 	"context"
+	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/valyala/fasthttp"
 
@@ -50,8 +50,7 @@ func (this *HttpServer) Shutdown() error {
 	log.Info("server start to shutdown")
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	err := this.Server.Shutdown(ctx)
-	return err
+	return this.Server.Shutdown(ctx)
 }
 
 // 封装fasthttp.Server

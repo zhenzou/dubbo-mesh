@@ -1,17 +1,17 @@
 package sidecar
 
 import (
-	"sync/atomic"
-	"net/http"
 	"errors"
+	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/valyala/fasthttp"
 
-	"dubbo-mesh/registry"
 	"dubbo-mesh/derror"
-	"dubbo-mesh/mesh"
 	"dubbo-mesh/log"
+	"dubbo-mesh/mesh"
+	"dubbo-mesh/registry"
 	"dubbo-mesh/util"
 )
 
@@ -127,11 +127,10 @@ func (this *Consumer) fastHandler(ctx *fasthttp.RequestCtx) {
 func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
 	// TODO retry.会影响性能
 	endpoint := this.Elect()
-	log.Info(endpoint.String())
-	atomic.AddInt32(&endpoint.Active, 1)
+	atomic.AddInt32(&endpoint.Meter.Active, 1)
 	start := time.Now()
 	data, err := this.Invoke(endpoint.Endpoint, inv)
-	atomic.AddInt32(&endpoint.Active, -1)
+	atomic.AddInt32(&endpoint.Meter.Active, -1)
 	end := time.Now()
 	this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()/1000000))
 	return data, err

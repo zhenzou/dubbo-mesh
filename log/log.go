@@ -10,7 +10,7 @@ import (
 type levelType int8
 
 const (
-	DebugLevel  levelType = iota + 1
+	DebugLevel levelType = iota + 1
 	InfoLevel
 	WarnLevel
 	ErrorLevel

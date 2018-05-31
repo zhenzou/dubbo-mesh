@@ -1,10 +1,10 @@
 package sidecar
 
 import (
-	"dubbo-mesh/dubbo"
 	"dubbo-mesh/derror"
-	"dubbo-mesh/registry"
+	"dubbo-mesh/dubbo"
 	"dubbo-mesh/mesh"
+	"dubbo-mesh/registry"
 )
 
 func NewMockProvider(cfg *Config) *Provider {
