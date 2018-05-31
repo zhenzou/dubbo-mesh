@@ -22,3 +22,7 @@ func Int64ToBytes(i int64) []byte {
 func Bytes2Int(data []byte) int {
 	return int(binary.BigEndian.Uint32(data))
 }
+
+func Bytes2Int64(data []byte) int64 {
+	return int64(binary.BigEndian.Uint64(data))
+}

@@ -31,18 +31,20 @@ type Conn struct {
 }
 
 func (this *Conn) WriteRequest(req *Request) (err error) {
-	header := headerPool.Get().(Header)
-	defer headerPool.Put(header)
-	header[2] = FlagRequest | 6
+	data := req.Data.(*Invocation).Encode()
+
+	header := headers.Get().(Header)
+	defer headers.Put(header)
+	header.SetReq()
 	if req.TwoWay {
-		header[2] |= FlagTwoWay
+		header.SetTwoWay()
 	}
 	if req.Event {
-		header[2] |= FlagEvent
+		header.SetEvent()
 	}
-	EncodeInt64(header, req.Id, 4)
-	data := EncodeInvocation(req.Data.(*Invocation))
-	EncodeInt(header, len(data), 12)
+	header.SetReqId(req.Id)
+	header.SetLen(len(data))
+
 	_, err = this.Write(header)
 	_, err = this.Write(data)
 	if err != nil {
@@ -63,13 +65,13 @@ func (this *Conn) ReadResponse() (resp *Response, err error) {
 		err = ReadBeforeRequestError
 		return
 	}
-	header := headerPool.Get().(Header)
-	defer headerPool.Put(header)
+	header := headers.Get().(Header)
+	defer headers.Put(header)
 	_, err = this.Read(header)
 	if err != nil {
 		return
 	}
-	length := header.DataLen()
+	length := header.Len()
 	var data []byte
 	if length > BufSize {
 		data = make([]byte, length)
@@ -80,7 +82,7 @@ func (this *Conn) ReadResponse() (resp *Response, err error) {
 	if err != nil {
 		return
 	}
-	resp = NewResponse(header.Status(), header.RequestId(), data)
+	resp = NewResponse(header.Status(), header.ReqId(), data)
 	this.send = false
 	return
 }
@@ -89,7 +91,7 @@ func (this *Conn) HeartBeat(header Header) (err error) {
 	header[2] |= 0 | FlagTwoWay | 6
 	header[3] = StatusOk
 	data, _ := json.Marshal(nil)
-	EncodeInt(header, len(data), 12)
+	header.SetLen(len(data))
 	_, err = this.Write(header)
 	_, err = this.Write(data)
 	return err

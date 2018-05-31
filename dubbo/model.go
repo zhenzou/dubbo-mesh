@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 
 	"dubbo-mesh/util"
+	"dubbo-mesh/json"
 )
 
 var (
@@ -29,6 +30,16 @@ type Invocation struct {
 	Method    string
 	Args      []byte
 	Attach    map[string]interface{}
+}
+
+func (this *Invocation) Encode() []byte {
+	dubbo, _ := json.Marshal(this.Attach["dubbo"])
+	path, _ := json.Marshal(this.Attach["path"])
+	version, _ := json.Marshal(this.Attach["version"])
+	method, _ := json.Marshal(this.Method)
+	paramType, _ := json.Marshal(this.ParamType)
+	attach, _ := json.Marshal(this.Attach)
+	return bytes.Join([][]byte{dubbo, path, version, method, paramType, this.Args, attach}, ParamSeparator)
 }
 
 type Request struct {
