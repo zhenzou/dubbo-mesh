@@ -1,28 +1,20 @@
 package registry
 
-import (
-	"fmt"
-)
-
 const (
 	RootPath = "dubbo-mesh"
 )
 
 // 系统配置相关信息
 type System struct {
-	CpuNum      int
-	TotalMemory int
-	UsedMemory  int
+	CpuNum int
+	Memory int
+	Name   string `json:"name"`
 }
 
 type Endpoint struct {
 	Host   string  `json:"host"`
-	Port   int     `json:"-"`
-	System *System `json:"-"`
-}
-
-func (this *Endpoint) String() string {
-	return fmt.Sprintf("%s:%d", this.Host, this.Port)
+	Port   int     `json:"port"`
+	System *System `json:"system"`
 }
 
 type Registry interface {

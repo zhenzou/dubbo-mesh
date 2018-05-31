@@ -53,5 +53,5 @@ func (this *WeightRandom) weightGcd(weights map[*Endpoint]int) int {
 
 // 简单的计算权重，暂时 就把内存做为权重
 func (this *WeightRandom) calculateWrr(status *Endpoint) int {
-	return status.System.TotalMemory
+	return status.System.Memory
 }

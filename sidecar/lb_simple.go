@@ -99,12 +99,12 @@ func (r *WeightLeastActive) weightGcd() int32 {
 
 // 简单的计算权重，暂时 就把内存做为权重
 func (this *WeightLeastActive) calculateWrr(status *Endpoint) int32 {
-	return int32(status.System.TotalMemory)
+	return int32(status.System.Memory)
 }
 
 func (this *WeightLeastActive) weight(endpoint *Endpoint) int32 {
 
-	return int32(endpoint.Meter.Latest+endpoint.Meter.Avg()) / 2
+	return endpoint.Meter.Active / this.weights[endpoint]
 }
 
 func (this *WeightLeastActive) Elect(endpoints []*Endpoint) *Endpoint {

@@ -80,5 +80,5 @@ func (r *WeightRoundRobin) weightGcd() int {
 
 // 简单的计算权重，暂时 就把内存做为权重
 func (this *WeightRoundRobin) calculateWrr(status *Endpoint) int {
-	return status.System.TotalMemory
+	return status.System.Memory
 }
