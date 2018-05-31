@@ -12,8 +12,8 @@ const (
 
 // 系统配置相关信息
 type System struct {
-	CpuNum int
-	Memory int
+	CpuNum int    `json:"cpu_num"`
+	Memory int    `json:"memory"`
 	Name   string `json:"name"`
 }
 
@@ -33,7 +33,7 @@ func NewEndpoint(addr string) (*Endpoint, error) {
 	if err != nil {
 		return nil, fmt.Errorf("wrong addr %s", addr)
 	}
-	return &Endpoint{Host: split[0], Port: port}, nil
+	return &Endpoint{addr: addr, Host: split[0], Port: port}, nil
 }
 
 func (this *Endpoint) Addr() string {

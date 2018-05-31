@@ -94,7 +94,6 @@ func (this *Etcd) Find(serviceName string) (endpoints []*Endpoint, err error) {
 		addr := strings.TrimPrefix(key, prefix)
 
 		endpoint, err := NewEndpoint(addr)
-
 		if err != nil {
 			log.Warnf("wrong endpoint %s %s", key, addr)
 			continue
