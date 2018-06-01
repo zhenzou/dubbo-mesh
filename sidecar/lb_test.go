@@ -113,13 +113,13 @@ func BenchmarkLeastActive(b *testing.B) {
 
 	endpoints := []*Endpoint{
 		&Endpoint{
-			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 2048}}, Active: 100,
+			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 2048}}, Meter: &Meter{Active: 100},
 		},
 		&Endpoint{
-			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 4096}}, Active: 200,
+			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 4096}}, Meter: &Meter{Active: 200},
 		},
 		&Endpoint{
-			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 6144}}, Active: 50,
+			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 6144}}, Meter: &Meter{Active: 50},
 		},
 	}
 	la.Init(endpoints)
@@ -139,13 +139,13 @@ func BenchmarkWeightLeastActive(b *testing.B) {
 
 	endpoints := []*Endpoint{
 		&Endpoint{
-			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 2048}}, Active: 123,
+			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 2048}}, Meter: &Meter{Active: 123},
 		},
 		&Endpoint{
-			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 4096}}, Active: 45,
+			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 4096}}, Meter: &Meter{Active: 45},
 		},
 		&Endpoint{
-			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 6144}}, Active: 98,
+			Endpoint: &registry.Endpoint{System: &registry.System{Memory: 6144}}, Meter: &Meter{Active: 98},
 		},
 	}
 	la.Init(endpoints)

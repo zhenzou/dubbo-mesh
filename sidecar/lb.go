@@ -50,16 +50,11 @@ type Endpoint struct {
 }
 
 func (this *Endpoint) String() string {
-	m := map[string]interface{}{}
-	m["host"] = this.Host
+	m := make(map[string]interface{}, 3)
+	m["name"] = this.System.Name
 	m["avg"] = this.Meter.Avg()
 	m["meter"] = this.Meter
 	return util.ToJsonStr(m)
-}
-
-type Rtt struct {
-	Endpoint *Endpoint
-	Rtt      int64
 }
 
 type Meter struct {

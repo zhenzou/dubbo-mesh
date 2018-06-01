@@ -38,7 +38,6 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 		registry: registry,
 		Balancer: lb(cfg.Balancer),
 		Client:   mesh.NewTcpClient(),
-		rtts:     make(chan *Rtt, 256),
 	}
 	derror.Panic(consumer.init())
 	switch s := server.(type) {
@@ -59,7 +58,6 @@ type Consumer struct {
 	registry  registry.Registry
 	endpoints []*Endpoint
 	Balancer  Banlancer
-	rtts      chan *Rtt
 }
 
 func (this *Consumer) init() error {
@@ -132,11 +130,13 @@ func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	atomic.AddInt32(&endpoint.Meter.Active, -1)
 	end := time.Now()
-	this.syncRecord(endpoint, uint64(end.Sub(start).Nanoseconds()/1000000))
+	rtt := uint64(end.Sub(start).Nanoseconds() / 1000000)
+	log.Debugf("%s %d %d", endpoint.System.Name, endpoint.Meter.Active, rtt)
+	this.record(endpoint, rtt)
 	return data, err
 }
 
-func (this *Consumer) syncRecord(endpoint *Endpoint, mill uint64) {
+func (this *Consumer) record(endpoint *Endpoint, mill uint64) {
 	atomic.AddUint64(&endpoint.Meter.Count, 1)
 	atomic.AddUint64(&endpoint.Meter.Total, mill)
 	atomic.StoreUint64(&endpoint.Meter.Latest, mill)

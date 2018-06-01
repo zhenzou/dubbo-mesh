@@ -73,7 +73,6 @@ func (this *HttpServer) invoke(w http.ResponseWriter, req *http.Request) {
 		log.Warn(resp.Error().Error())
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
-		//w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.Write(resp.Body())
 	}
 }

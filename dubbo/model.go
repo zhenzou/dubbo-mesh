@@ -6,8 +6,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"dubbo-mesh/util"
 	"dubbo-mesh/json"
+	"dubbo-mesh/util"
 )
 
 var (

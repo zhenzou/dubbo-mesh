@@ -26,7 +26,7 @@ func main() {
 				Etcd:       cmd.Etcd,
 				Service:    cmd.Service,
 				Balancer:   sidecar.LB_WLActive,
-				Server:     1,
+				Server:     0,
 			}
 			log.Info(util.ToJsonStr(cfg))
 			return nil
