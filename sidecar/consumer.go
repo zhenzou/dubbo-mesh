@@ -123,29 +123,16 @@ func (this *Consumer) fastHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
-	// TODO retry.会影响性能
 	endpoint := this.Elect()
 	atomic.AddInt32(&endpoint.Meter.Active, 1)
 	start := time.Now()
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	atomic.AddInt32(&endpoint.Meter.Active, -1)
 	end := time.Now()
-	rtt := uint64(end.Sub(start).Nanoseconds() / 1000000)
-	log.Debugf("%s %d %d", endpoint.System.Name, endpoint.Meter.Active, rtt)
-	this.record(endpoint, rtt)
+	latency := uint64(end.Sub(start).Nanoseconds())
+	log.Debugf("%s %d %d", endpoint.System.Name, endpoint.Meter.Active, latency)
+	endpoint.Meter.Record(latency)
 	return data, err
-}
-
-func (this *Consumer) record(endpoint *Endpoint, mill uint64) {
-	atomic.AddUint64(&endpoint.Meter.Count, 1)
-	atomic.AddUint64(&endpoint.Meter.Total, mill)
-	atomic.StoreUint64(&endpoint.Meter.Latest, mill)
-	if mill < endpoint.Meter.Min {
-		atomic.StoreUint64(&endpoint.Meter.Min, mill)
-	}
-	if mill > endpoint.Meter.Max {
-		atomic.StoreUint64(&endpoint.Meter.Max, mill)
-	}
 }
 
 func (this *Consumer) print() {

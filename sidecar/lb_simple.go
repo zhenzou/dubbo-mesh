@@ -6,28 +6,6 @@ import (
 	"dubbo-mesh/util"
 )
 
-// 下面的两种会导致性能最好的负担太重
-// 最近响应时间最短
-// 不太行
-type LeastLatest struct {
-}
-
-func (this *LeastLatest) Init(endpoint []*Endpoint) {
-	// do nothing
-}
-
-func (this *LeastLatest) Elect(endpoints []*Endpoint) *Endpoint {
-	var result *Endpoint
-	var min uint64 = math.MaxUint64
-	for _, endpoint := range endpoints {
-		if endpoint.Meter.Latest < min {
-			min = endpoint.Meter.Latest
-			result = endpoint
-		}
-	}
-	return result
-}
-
 // 平均响应时间最短
 // 不太行
 type LeastAVG struct {
@@ -68,52 +46,58 @@ func (this *LeastActive) Elect(endpoints []*Endpoint) *Endpoint {
 	return result
 }
 
-type WeightLeastActive struct {
-	weights map[*Endpoint]int32
+type WeightLeastLatestAvg struct {
+	weights map[*Endpoint]int
+	next    *Endpoint
 }
 
-func (this *WeightLeastActive) Init(endpoints []*Endpoint) {
-	this.weights = make(map[*Endpoint]int32)
+func (this *WeightLeastLatestAvg) Init(endpoints []*Endpoint) {
+	this.weights = make(map[*Endpoint]int)
 	for _, endpoint := range endpoints {
 		weight := this.calculateWrr(endpoint)
 		this.weights[endpoint] = weight
 	}
 	gcd := this.weightGcd()
-	for k, weight := range this.weights {
-		max := weight / gcd
-		this.weights[k] = max
+	total := 0
+	for k, w := range this.weights {
+		weight := w / gcd
+		total += weight
+		this.weights[k] = weight
 	}
+	this.next = endpoints[0]
 }
 
-func (r *WeightLeastActive) weightGcd() int32 {
-	var divisor int32 = -1
+func (r *WeightLeastLatestAvg) weightGcd() int {
+	divisor := -1
 	for _, s := range r.weights {
 		if divisor == -1 {
 			divisor = s
 		} else {
-			divisor = util.Gcd32(divisor, s)
+			divisor = util.Gcd(divisor, s)
 		}
 	}
 	return divisor
 }
 
 // 简单的计算权重，暂时 就把内存做为权重
-func (this *WeightLeastActive) calculateWrr(status *Endpoint) int32 {
-	return int32(status.System.Memory)
+func (this *WeightLeastLatestAvg) calculateWrr(status *Endpoint) int {
+	return status.System.Memory
 }
 
-func (this *WeightLeastActive) weight(endpoint *Endpoint) int32 {
-
-	return endpoint.Meter.Active / this.weights[endpoint]
+func (this *WeightLeastLatestAvg) weight(endpoint *Endpoint) int {
+	return int(endpoint.Meter.Avg())
 }
 
-func (this *WeightLeastActive) Elect(endpoints []*Endpoint) *Endpoint {
-	var result *Endpoint
-	var min int32 = math.MaxInt32
+func (this *WeightLeastLatestAvg) Elect(endpoints []*Endpoint) *Endpoint {
+	min := math.MaxInt32
+	result := this.next
 	for _, endpoint := range endpoints {
+		if *endpoint == *result {
+			continue
+		}
 		if cur := this.weight(endpoint); cur < min {
 			min = cur
-			result = endpoint
+			this.next = endpoint
 		}
 	}
 	return result

@@ -578,6 +578,12 @@
 			"path": "google.golang.org/grpc/transport",
 			"revision": "4172bfc25e1c7dc4265a50b3ba73e87401fb75c1",
 			"revisionTime": "2018-04-20T00:17:21Z"
+		},
+		{
+			"checksumSHA1": "SpvcCfinaU/bleM/wC+/Zz3pBB0=",
+			"path": "gopkg.in/eapache/queue.v1",
+			"revision": "44cc805cf13205b55f69e14bcb69867d1ae92f98",
+			"revisionTime": "2016-08-05T00:47:13Z"
 		}
 	],
 	"rootPath": "dubbo-mesh"

@@ -26,7 +26,7 @@ type TcpClient struct {
 }
 
 func (this *TcpClient) newPool(addr string) *Pool {
-	return NewPool(256, func() (net.Conn, error) {
+	return NewPool(200, func() (net.Conn, error) {
 		return net.Dial("tcp", addr)
 	})
 }

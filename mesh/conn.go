@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"net"
-	"sync/atomic"
 	"time"
+	"sync"
 
 	"dubbo-mesh/derror"
 	"dubbo-mesh/log"
@@ -17,30 +17,38 @@ var (
 )
 
 func NewPool(max int, new func() (net.Conn, error)) *Pool {
-	return &Pool{New: new, ch: make(chan net.Conn, max)}
+	return &Pool{New: new, max: max, ch: make(chan net.Conn, max)}
 }
 
 type Pool struct {
 	addr  string
 	ch    chan net.Conn
-	count uint32
+	max   int
+	count int
+	mtx   sync.Mutex
 	New   func() (net.Conn, error)
 }
 
+// 一定要使用Put放回来
 func (this *Pool) Get() (net.Conn, error) {
-	select {
-	case conn, more := <-this.ch:
-		if !more {
-			return nil, PoolShutdownError
-		}
-		return conn, nil
-	default:
-		count := atomic.AddUint32(&this.count, 1)
+	this.mtx.Lock()
+	if this.count < this.max {
 		conn, err := this.New()
 		if err == nil {
-			log.Infof("new %d %s", count, conn.RemoteAddr())
+			this.count += 1
+			log.Infof("new %d %s", this.count, conn.RemoteAddr())
 		}
+		this.mtx.Unlock()
 		return conn, err
+	} else {
+		this.mtx.Unlock()
+		select {
+		case conn, more := <-this.ch:
+			if !more {
+				return nil, PoolShutdownError
+			}
+			return conn, nil
+		}
 	}
 }
 
