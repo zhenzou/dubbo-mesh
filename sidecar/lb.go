@@ -4,8 +4,8 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/eapache/queue"
-	
+	"gopkg.in/eapache/queue.v1"
+
 	"dubbo-mesh/registry"
 	"dubbo-mesh/util"
 )
