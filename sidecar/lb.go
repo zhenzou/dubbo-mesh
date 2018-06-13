@@ -4,16 +4,18 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/eapache/queue"
+	
 	"dubbo-mesh/registry"
 	"dubbo-mesh/util"
 )
 
 const (
-	LB_Random  = iota
+	LB_Random = iota + 1
 	LB_RR
 	LB_WRR
 	LB_LAvg
-	LB_LActive
+	LB_LA
 	LB_WLA
 )
 
@@ -31,7 +33,7 @@ func lb(elector int) Banlancer {
 		return &WeightRoundRobin{}
 	case LB_LAvg:
 		return &LeastAVG{}
-	case LB_LActive:
+	case LB_LA:
 		return &LeastActive{}
 	case LB_WLA:
 		return &WeightLeastLatestAvg{}
