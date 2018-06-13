@@ -135,7 +135,7 @@ func BenchmarkLeastActive(b *testing.B) {
 func BenchmarkWeightLeastActive(b *testing.B) {
 	b.ReportAllocs()
 	b.StopTimer()
-	la := &WeightLeastLatestAvg{}
+	la := &LeastLatestAvg{}
 
 	endpoints := []*Endpoint{
 		&Endpoint{

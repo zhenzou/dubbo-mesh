@@ -16,7 +16,7 @@ const (
 	LB_WRR
 	LB_LAvg
 	LB_LA
-	LB_WLA
+	LB_LLA
 )
 
 const (
@@ -35,8 +35,8 @@ func lb(elector int) Banlancer {
 		return &LeastAVG{}
 	case LB_LA:
 		return &LeastActive{}
-	case LB_WLA:
-		return &WeightLeastLatestAvg{}
+	case LB_LLA:
+		return &LeastLatestAvg{}
 	default:
 		panic(errors.New("unknown load balancer"))
 	}
@@ -63,17 +63,16 @@ func (this *Endpoint) String() string {
 type Meter struct {
 	mtx    sync.Mutex
 	Queue  *queue.Queue
-	Latest uint64 `json:"latest"`
 	Count  uint64 `json:"count,omitempty"`  // 已处理的总数
 	Active int32  `json:"active,omitempty"` // 当前连接数
 	Total  uint64 `json:"total,omitempty"`
 }
 
-// 最近平均值
+// 记录最近延迟以及相应处理
+// TODO 将这些逻辑移到Balancer中
 func (this *Meter) Record(latest uint64) {
 	this.mtx.Lock()
 	defer this.mtx.Unlock()
-	this.Latest = latest
 	this.Count += 1
 	this.Total += latest
 	if this.Count >= AVG_COUNT {

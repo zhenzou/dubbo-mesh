@@ -25,7 +25,7 @@ func main() {
 				ServerPort: cmd.Port,
 				Etcd:       cmd.Etcd,
 				Service:    cmd.Service,
-				Balancer:   sidecar.LB_WLA,
+				Balancer:   sidecar.LB_LLA,
 				Server:     1,
 			}
 			log.Info(util.ToJsonStr(cfg))
