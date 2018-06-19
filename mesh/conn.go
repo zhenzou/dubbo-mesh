@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"net"
-	"time"
 	"sync"
+	"time"
 
 	"dubbo-mesh/derror"
 	"dubbo-mesh/log"
@@ -31,23 +31,31 @@ type Pool struct {
 
 // 一定要使用Put放回来
 func (this *Pool) Get() (net.Conn, error) {
-	this.mtx.Lock()
-	if this.count < this.max {
-		conn, err := this.New()
-		if err == nil {
-			this.count += 1
-			log.Infof("new %d %s", this.count, conn.RemoteAddr())
+	select {
+	case conn, more := <-this.ch:
+		if !more {
+			return nil, PoolShutdownError
 		}
-		this.mtx.Unlock()
-		return conn, err
-	} else {
-		this.mtx.Unlock()
-		select {
-		case conn, more := <-this.ch:
-			if !more {
-				return nil, PoolShutdownError
+		return conn, nil
+	default:
+		this.mtx.Lock()
+		if this.count < this.max {
+			conn, err := this.New()
+			if err == nil {
+				this.count += 1
+				log.Infof("mesh %d %s", this.count, conn.RemoteAddr())
 			}
-			return conn, nil
+			this.mtx.Unlock()
+			return conn, err
+		} else {
+			this.mtx.Unlock()
+			select {
+			case conn, more := <-this.ch:
+				if !more {
+					return nil, PoolShutdownError
+				}
+				return conn, nil
+			}
 		}
 	}
 }

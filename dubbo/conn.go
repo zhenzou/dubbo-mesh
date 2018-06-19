@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"net"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	"dubbo-mesh/derror"
@@ -99,37 +99,24 @@ func (this *Conn) HeartBeat(header Header) (err error) {
 
 func NewPool(max int, dubbo string) *Pool {
 	log.Info("dubbo", dubbo)
-	pool := &Pool{addr: dubbo, ch: make(chan *Conn, max)}
+	pool := &Pool{addr: dubbo, max: uint32(max), ch: make(chan *Conn, max)}
 	return pool
 }
 
 type Pool struct {
 	addr  string
 	count uint32
+	max   uint32
+	mtx   sync.Mutex
 	ch    chan *Conn
 }
 
 func (this *Pool) new() (*Conn, error) {
 	conn, err := net.Dial("tcp", this.addr)
-
 	if err != nil {
 		return nil, err
 	}
-	count := atomic.AddUint32(&this.count, 1)
-	log.Infof("new %d,%s", count, conn.RemoteAddr())
 	return &Conn{Conn: conn, buf: make([]byte, BufSize)}, nil
-}
-
-func (this *Pool) Get() (*Conn, error) {
-	select {
-	case conn, more := <-this.ch:
-		if !more {
-			return nil, PoolShutdownError
-		}
-		return conn, nil
-	default:
-		return this.new()
-	}
 }
 
 func (this *Pool) Put(conn *Conn) {

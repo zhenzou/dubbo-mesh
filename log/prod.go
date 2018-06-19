@@ -16,11 +16,11 @@ var (
 
 func defaultLogger() *zap.Logger {
 
-	infoFile, err := os.OpenFile("/root/logs/info.log", os.O_CREATE|os.O_TRUNC|os.O_RDWR, os.ModePerm)
+	infoFile, err := os.OpenFile("/root/logs/info.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
-	errorFile, err := os.OpenFile("/root/logs/error.log", os.O_CREATE|os.O_TRUNC|os.O_RDWR, os.ModePerm)
+	errorFile, err := os.OpenFile("/root/logs/error.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}

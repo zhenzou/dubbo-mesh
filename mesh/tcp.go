@@ -1,6 +1,7 @@
 package mesh
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -14,10 +15,15 @@ import (
 	"dubbo-mesh/util"
 )
 
-func NewTcpClient() Client {
-	return &TcpClient{
+// 为了优化，一般来说应该要动态的初始化连接池
+func NewTcpClient(endpoints []*registry.Endpoint) Client {
+	client := &TcpClient{
 		pool: make(map[*registry.Endpoint]*Pool),
 	}
+	for _, endpoint := range endpoints {
+		client.pool[endpoint] = client.newPool(endpoint.Addr())
+	}
+	return client
 }
 
 type TcpClient struct {
@@ -32,18 +38,14 @@ func (this *TcpClient) newPool(addr string) *Pool {
 }
 
 func (this *TcpClient) Invoke(endpoint *registry.Endpoint, inv *Invocation) ([]byte, error) {
+
 	var (
 		pool *Pool
 		ok   bool
 	)
 	// DCL
 	if pool, ok = this.pool[endpoint]; !ok {
-		this.Lock()
-		if pool, ok = this.pool[endpoint]; !ok {
-			pool = this.newPool(endpoint.Addr())
-			this.pool[endpoint] = pool
-		}
-		this.Unlock()
+		return nil, errors.New("not registered")
 	}
 	conn, err := pool.Get()
 	if err != nil {

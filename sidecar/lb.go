@@ -17,13 +17,12 @@ const (
 	LB_LAvg
 	LB_LA
 	LB_LLA
+	LB_WLLA
 )
 
-const (
-	AVG_COUNT = 16
-)
 
-func lb(elector int) Banlancer {
+
+func lb(elector int) Balancer {
 	switch elector {
 	case LB_Random:
 		return &Random{}
@@ -37,14 +36,71 @@ func lb(elector int) Banlancer {
 		return &LeastActive{}
 	case LB_LLA:
 		return &LeastLatestAvg{}
+	case LB_WLLA:
+		return &WeightLeastLatestAvg{}
 	default:
 		panic(errors.New("unknown load balancer"))
 	}
 }
 
-type Banlancer interface {
-	Init(endpoint []*Endpoint)
-	Elect(endpoints []*Endpoint) *Endpoint
+type Balancer interface {
+	Init(endpoints []*Endpoint)
+	Record(endpoint *Endpoint, latency uint64)
+	Add(endpoint *Endpoint)
+	Count() int
+	Elect() *Endpoint
+}
+
+type baseBalancer struct {
+	endpoints []*Endpoint
+}
+
+func (this *baseBalancer) Record(endpoint *Endpoint, latency uint64) {
+	meter := endpoint.Meter
+	meter.Mtx.Lock()
+	meter.Count += 1
+	meter.Latest = latency
+	meter.Total += latency
+	if latency < meter.Min {
+		meter.Min = latency
+	} else if latency > meter.Max {
+		meter.Max = latency
+	}
+	meter.Mtx.Unlock()
+}
+
+func (this *baseBalancer) Init(endpoints []*Endpoint) {
+	this.endpoints = endpoints
+}
+
+func (this *baseBalancer) Add(endpoint *Endpoint) {
+	this.endpoints = append(this.endpoints, endpoint)
+}
+
+func (this *baseBalancer) Count() int {
+	return len(this.endpoints)
+}
+
+func (this *baseBalancer) Elect() *Endpoint {
+	// impl
+	return nil
+}
+
+func (this *baseBalancer) gcd(weights map[*Endpoint]int) int {
+	divisor := -1
+	for _, s := range weights {
+		if divisor == -1 {
+			divisor = s
+		} else {
+			divisor = util.Gcd(divisor, s)
+		}
+	}
+	return divisor
+}
+
+// 简单的计算权重，暂时 就把内存做为权重
+func (this *baseBalancer) weight(status *Endpoint) int {
+	return status.System.Memory
 }
 
 type Endpoint struct {
@@ -53,7 +109,7 @@ type Endpoint struct {
 }
 
 func (this *Endpoint) String() string {
-	m := make(map[string]interface{}, 3)
+	m := make(map[string]interface{}, 4)
 	m["name"] = this.System.Name
 	m["avg"] = this.Meter.Avg()
 	m["meter"] = this.Meter
@@ -61,37 +117,24 @@ func (this *Endpoint) String() string {
 }
 
 type Meter struct {
-	mtx    sync.Mutex
-	Queue  *queue.Queue
-	Count  uint64 `json:"count,omitempty"`  // 已处理的总数
-	Active int32  `json:"active,omitempty"` // 当前连接数
-	Total  uint64 `json:"total,omitempty"`
+	Mtx        sync.Mutex
+	Queue      *queue.Queue
+	Latest     uint64 `json:"latest"`
+	Min        uint64 `json:"min"`
+	Max        uint64 `json:"max"`
+	Error      bool   `json:"error"`
+	ErrorCount uint64 `json:"error_count"`
+	Count      uint64 `json:"count,omitempty"`  // 已处理的总数
+	Active     int32  `json:"active,omitempty"` // 当前连接数
+	Total      uint64 `json:"total,omitempty"`
 }
 
-// 记录最近延迟以及相应处理
-// TODO 将这些逻辑移到Balancer中
-func (this *Meter) Record(latest uint64) {
-	this.mtx.Lock()
-	defer this.mtx.Unlock()
-	this.Count += 1
-	this.Total += latest
-	if this.Count >= AVG_COUNT {
-		val := this.Queue.Remove()
-		this.Total -= val.(uint64)
-	}
-	this.Queue.Add(latest)
-}
-
-// 最近32平均值
+// 平均值
 func (this *Meter) Avg() uint64 {
 	if this.Count == 0 {
 		return 0
 	}
-	if this.Count < AVG_COUNT {
-		return this.Total / this.Count
-	} else {
-		return this.Total / AVG_COUNT
-	}
+	return this.Total / this.Count
 }
 
 func NewEndpoint(endpoint *registry.Endpoint) *Endpoint {

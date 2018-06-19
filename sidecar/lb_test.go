@@ -23,7 +23,7 @@ func TestWeightRoundRobin(t *testing.T) {
 	wrr.Init(endpoints)
 	count := map[int]int{}
 	for i := 0; i < 100000; i++ {
-		end := wrr.Elect(endpoints)
+		end := wrr.Elect()
 		count[end.System.Memory] = count[end.System.Memory] + 1
 	}
 	println(util.ToJsonStr(count))
@@ -48,7 +48,7 @@ func BenchmarkWeightRoundRobin(b *testing.B) {
 	count := map[int]int{}
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		end := wrr.Elect(endpoints)
+		end := wrr.Elect()
 		count[end.System.Memory] = count[end.System.Memory] + 1
 	}
 	println(util.ToJsonStr(count))
@@ -74,7 +74,7 @@ func TestWeightRandom(t *testing.T) {
 	wr.Init(endpoints)
 	count := map[int]int{}
 	for i := 0; i < 100000; i++ {
-		end := wr.Elect(endpoints)
+		end := wr.Elect()
 		count[end.System.Memory] = count[end.System.Memory] + 1
 	}
 	println(util.ToJsonStr(count))
@@ -100,7 +100,7 @@ func BenchmarkWeightRandom(b *testing.B) {
 	count := map[int]int{}
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		end := wr.Elect(endpoints)
+		end := wr.Elect()
 		count[end.System.Memory] = count[end.System.Memory] + 1
 	}
 	println(util.ToJsonStr(count))
@@ -126,7 +126,7 @@ func BenchmarkLeastActive(b *testing.B) {
 	count := map[int]int{}
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		end := la.Elect(endpoints)
+		end := la.Elect()
 		count[end.System.Memory] = count[end.System.Memory] + 1
 	}
 	println(util.ToJsonStr(count))
@@ -153,7 +153,7 @@ func BenchmarkWeightLeastActive(b *testing.B) {
 	count := map[int]int{}
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		end := la.Elect(endpoints)
+		end := la.Elect()
 		count[end.System.Memory] = count[end.System.Memory] + 1
 	}
 }

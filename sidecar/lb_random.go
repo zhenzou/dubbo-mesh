@@ -2,25 +2,26 @@ package sidecar
 
 import (
 	"math/rand"
-
-	"dubbo-mesh/util"
 )
 
 type Random struct {
+	baseBalancer
 	total int
 }
 
-func (this *Random) Init(endpoint []*Endpoint) {
-	this.total = len(endpoint)
+func (this *Random) Init(endpoints []*Endpoint) {
+	this.baseBalancer.Init(endpoints)
+	this.total = len(endpoints)
 }
 
-func (this *Random) Elect(endpoints []*Endpoint) *Endpoint {
+func (this *Random) Elect() *Endpoint {
 	i := rand.Intn(this.total)
-	return endpoints[i]
+	return this.endpoints[i]
 }
 
-// 加权随机
+// 加权随机,没有实现add
 type WeightRandom struct {
+	baseBalancer
 	indexes map[int]*Endpoint
 	total   int
 }
@@ -28,9 +29,9 @@ type WeightRandom struct {
 func (this *WeightRandom) Init(endpoints []*Endpoint) {
 	weights := make(map[*Endpoint]int)
 	for _, endpoint := range endpoints {
-		weights[endpoint] = this.calculateWrr(endpoint)
+		weights[endpoint] = this.weight(endpoint)
 	}
-	gcd := this.weightGcd(weights)
+	gcd := this.gcd(weights)
 	for k, originWeight := range weights {
 		weight := originWeight / gcd
 		weights[k] = weight
@@ -47,24 +48,7 @@ func (this *WeightRandom) Init(endpoints []*Endpoint) {
 	this.indexes = indexes
 }
 
-func (this *WeightRandom) Elect(endpoints []*Endpoint) *Endpoint {
+func (this *WeightRandom) Elect() *Endpoint {
 	n := rand.Intn(this.total)
 	return this.indexes[n]
-}
-
-func (this *WeightRandom) weightGcd(weights map[*Endpoint]int) int {
-	divisor := -1
-	for _, s := range weights {
-		if divisor == -1 {
-			divisor = s
-		} else {
-			divisor = util.Gcd(divisor, s)
-		}
-	}
-	return divisor
-}
-
-// 简单的计算权重，暂时 就把内存做为权重
-func (this *WeightRandom) calculateWrr(status *Endpoint) int {
-	return status.System.Memory
 }

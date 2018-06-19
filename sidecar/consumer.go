@@ -37,7 +37,6 @@ func newConsumer(cfg *Config, registry registry.Registry) *Consumer {
 		Server:   server,
 		registry: registry,
 		Balancer: lb(cfg.Balancer),
-		Client:   mesh.NewTcpClient(),
 	}
 	derror.Panic(consumer.init())
 	switch s := server.(type) {
@@ -57,7 +56,7 @@ type Consumer struct {
 	cfg       *Config
 	registry  registry.Registry
 	endpoints []*Endpoint
-	Balancer  Banlancer
+	Balancer  Balancer
 }
 
 func (this *Consumer) init() error {
@@ -65,6 +64,7 @@ func (this *Consumer) init() error {
 	if err != nil {
 		return err
 	}
+	this.Client = mesh.NewTcpClient(endpoints)
 	log.Info("providers:", util.ToJsonStr(endpoints))
 	this.endpoints = make([]*Endpoint, len(endpoints))
 	for i, endpoint := range endpoints {
@@ -128,10 +128,9 @@ func (this *Consumer) invoke(inv *mesh.Invocation) ([]byte, error) {
 	start := time.Now()
 	data, err := this.Invoke(endpoint.Endpoint, inv)
 	atomic.AddInt32(&endpoint.Meter.Active, -1)
-	end := time.Now()
-	latency := uint64(end.Sub(start).Nanoseconds())
+	latency := uint64(time.Now().Sub(start).Nanoseconds())
 	log.Debugf("%s %d %d", endpoint.System.Name, endpoint.Meter.Active, latency)
-	endpoint.Meter.Record(latency)
+	this.Balancer.Record(endpoint, latency)
 	return data, err
 }
 
@@ -150,5 +149,5 @@ func (this *Consumer) Elect() *Endpoint {
 	if len(this.endpoints) == 1 {
 		return this.endpoints[0]
 	}
-	return this.Balancer.Elect(this.endpoints)
+	return this.Balancer.Elect()
 }

@@ -22,6 +22,7 @@ bash build/benchmark.sh # 需要clone官方benchmarker项目
 在第一天的提交就已经到了4K QPS了，后面的几天都是在调参，但并没有什么很大的突破。
 目前来看最好的算法应该是WRR和加权最小连接数。
 准备尝试一下加权RTT。
+最新提交了一下，6.2K左右。
 
 ## 成绩
 ![成绩](doc/result.png)

@@ -7,7 +7,7 @@ ETCD_URL=http://${ETCD_HOST}:${ETCD_PORT}
 echo ETCD_URL = ${ETCD_URL}
 
 export GOGC=400
-#export GODEBUG=gctrace=1do
+export GODEBUG=gctrace=1
 
 if [[ "$1" == "consumer" ]]; then
   echo "Starting consumer agent..."
@@ -20,7 +20,7 @@ elif [[ "$1" == "provider-medium" ]]; then
   /root/dists/provider -m=2 -ps=200 -n=provider-medium -p=30000 -dp=20880 -e=${ETCD_URL}
 elif [[ "$1" == "provider-large" ]]; then
   echo "Starting large provider agent..."
-  /root/dists/provider -m=4 -ps=200 -n=provider-large -p=30000 -dp=20880  -e=${ETCD_URL}
+  /root/dists/provider -m=3 -ps=200 -n=provider-large -p=30000 -dp=20880  -e=${ETCD_URL}
 else
   echo "Unrecognized arguments, exit."
   exit 1

@@ -4,21 +4,22 @@ import (
 	"sync/atomic"
 
 	"dubbo-mesh/log"
-	"dubbo-mesh/util"
 )
 
 type RoundRobin struct {
+	baseBalancer
 	index int32
 	total int32
 }
 
-func (this *RoundRobin) Init(endpoint []*Endpoint) {
-	this.total = int32(len(endpoint))
+func (this *RoundRobin) Init(endpoints []*Endpoint) {
+	this.baseBalancer.Init(endpoints)
+	this.total = int32(len(endpoints))
 }
 
 // round robin
-func (this *RoundRobin) Elect(endpoints []*Endpoint) *Endpoint {
-	endpoint := endpoints[this.index]
+func (this *RoundRobin) Elect() *Endpoint {
+	endpoint := this.endpoints[this.index]
 	for !atomic.CompareAndSwapInt32(&this.index, this.index, (this.index+1)/this.total) {
 		log.Debug("rr:", this.index)
 	}
@@ -27,6 +28,7 @@ func (this *RoundRobin) Elect(endpoints []*Endpoint) *Endpoint {
 
 // 加权轮询
 type WeightRoundRobin struct {
+	baseBalancer
 	weights map[*Endpoint]int
 	index   int
 	max     int
@@ -34,13 +36,14 @@ type WeightRoundRobin struct {
 }
 
 func (this *WeightRoundRobin) Init(endpoints []*Endpoint) {
+	this.baseBalancer.Init(endpoints)
 	this.index = -1
 	this.weights = make(map[*Endpoint]int)
 	for _, endpoint := range endpoints {
-		weight := this.calculateWrr(endpoint)
+		weight := this.weight(endpoint)
 		this.weights[endpoint] = weight
 	}
-	gcd := this.weightGcd()
+	gcd := this.gcd(this.weights)
 	for k, weight := range this.weights {
 		max := weight / gcd
 		this.weights[k] = max
@@ -50,7 +53,8 @@ func (this *WeightRoundRobin) Init(endpoints []*Endpoint) {
 	}
 }
 
-func (this *WeightRoundRobin) Elect(endpoints []*Endpoint) *Endpoint {
+func (this *WeightRoundRobin) Elect() *Endpoint {
+	endpoints := this.endpoints
 	for {
 		this.index = (this.index + 1) % len(endpoints)
 		if this.index == 0 {
@@ -66,19 +70,28 @@ func (this *WeightRoundRobin) Elect(endpoints []*Endpoint) *Endpoint {
 	}
 }
 
-func (r *WeightRoundRobin) weightGcd() int {
-	divisor := -1
-	for _, s := range r.weights {
-		if divisor == -1 {
-			divisor = s
-		} else {
-			divisor = util.Gcd(divisor, s)
-		}
-	}
-	return divisor
+const (
+	SwitchCount = 20000
+)
+
+type WeightLeastLatestAvg struct {
+	baseBalancer
+	wrr   WeightRoundRobin
+	lla   LeastLatestAvg
+	count int32
 }
 
-// 简单的计算权重，暂时 就把内存做为权重
-func (this *WeightRoundRobin) calculateWrr(status *Endpoint) int {
-	return status.System.Memory
+func (this *WeightLeastLatestAvg) Init(endpoints []*Endpoint) {
+	this.wrr.Init(endpoints)
+	this.lla.Init(endpoints)
+}
+
+// 用wrr预热
+func (this *WeightLeastLatestAvg) Elect() *Endpoint {
+	count := atomic.AddInt32(&this.count, 1)
+	if count < SwitchCount {
+		return this.wrr.Elect()
+	} else {
+		return this.lla.Elect()
+	}
 }
